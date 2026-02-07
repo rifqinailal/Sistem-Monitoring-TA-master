@@ -43,6 +43,7 @@ use App\Http\Controllers\Administrator\KategoriNilai\KategoriNilaiController;
 use App\Http\Controllers\Administrator\PembagianDosen\PembagianDosenController;
 use App\Http\Controllers\Administrator\DaftarBimbingan\DaftarBimbinganController;
 use App\Http\Controllers\Administrator\RekomendasiTopik\RekomendasiTopikController;
+use App\Http\Controllers\Administrator\SesiUjian\SesiUjianController;
 
 /*
 |--------------------------------------------------------------------------
@@ -133,6 +134,14 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('show/{id}', [RuanganController::class, 'show'])->name('apps.ruangan.show');
         Route::post('update/{id}', [RuanganController::class, 'update'])->name('apps.ruangan.update')->middleware('can:update-ruangan');
         Route::get('destroy/{id}', [RuanganController::class, 'destroy'])->name('apps.ruangan.delete')->middleware('can:delete-ruangan');
+    });
+
+    Route::prefix('sesi-ujian')->middleware('can:read-sesi-ujian')->group(function () {
+        Route::get('', [SesiUjianController::class, 'index'])->name('apps.sesi-ujian');
+        Route::post('store', [SesiUjianController::class, 'store'])->name('apps.sesi-ujian.store')->middleware('can:create-sesi-ujian');
+        Route::get('show/{id}', [SesiUjianController::class, 'show'])->name('apps.sesi-ujian.show');
+        Route::post('update/{id}', [SesiUjianController::class, 'update'])->name('apps.sesi-ujian.update')->middleware('can:update-sesi-ujian');
+        Route::get('destroy/{id}', [SesiUjianController::class, 'destroy'])->name('apps.sesi-ujian.delete')->middleware('can:delete-sesi-ujian');
     });
 
     Route::prefix('topik')->middleware('can:read-topik')->group(function () {

@@ -119,7 +119,7 @@
                 @endcan
 
                 @if (in_array(session('switchRoles'), ['Admin','Developer','Kajur','Kaprodi','Teknisi']))
-                    @canany(['read-mahasiswa', 'read-dosen', 'read-ruangan', 'read-topik', 'read-topik', 'read-jurusan', 'read-program-studi', 'read-jenis', 'read-kuota', 'read-kategori-nilai', 'read-jenis-dokumen'])
+                    @canany(['read-mahasiswa', 'read-dosen', 'read-ruangan', 'read-sesi-ujian', 'read-topik', 'read-topik', 'read-jurusan', 'read-program-studi', 'read-jenis', 'read-kuota', 'read-kategori-nilai', 'read-jenis-dokumen'])
                     <li>
                         <a href="javascript: void(0);" class="has-arrow waves-effect">
                             <i class="mdi mdi-inbox-full"></i>
@@ -143,6 +143,9 @@
                             @endcan
                             @can(['read-ruangan'])
                             <li><a href="{{ route('apps.ruangan')}}">Ruangan</a></li>
+                            @endcan
+                            @can(['read-sesi-ujian'])
+                            <li><a href="{{ route('apps.sesi-ujian') }}">Sesi Ujian</a></li>
                             @endcan
                             @can(['read-jenis'])
                             <li><a href="{{route('apps.jenis-ta')}}">Jenis TA</a></li>

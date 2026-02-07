@@ -16,7 +16,7 @@ class RuanganController extends Controller
         $data = [
             "title" => "Ruangan",
             'mods' => 'ruangan',
-            'breadcrumb' => [
+            'breadcrumbs' => [
                 [
                     'title' => "Dashboard",
                     'url' => route('apps.dashboard')
@@ -32,7 +32,7 @@ class RuanganController extends Controller
             ],
             'dataRuangan'   => Ruangan::all(),
         ];
-        
+
         return view('administrator.ruangan.index', $data);
     }
 

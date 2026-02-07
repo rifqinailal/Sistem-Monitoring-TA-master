@@ -15,36 +15,36 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         //
-        $developer = Role::create([
+        $developer = Role::firstOrCreate([
             'name' => 'Developer',
             'guard_name' => 'web'
         ]);
 
-        $admin = Role::create([
+        $admin = Role::firstOrCreate([
             'name' => 'Admin',
             'guard_name' => 'web'
         ]);
 
-        $kajur = Role::create([
+        $kajur = Role::firstOrCreate([
             'name' => 'Kajur',
             'guard_name' => 'web'
         ]);
 
-        $kaprodi = Role::create([
+        $kaprodi = Role::firstOrCreate([
             'name' => 'Kaprodi',
             'guard_name' => 'web'
         ]);
 
-        $dosen = Role::create([
+        $dosen = Role::firstOrCreate([
             'name' => 'Dosen',
             'guard_name' => 'web'
         ]);
-        
-        $mahasiswa = Role::create([
+
+        $mahasiswa = Role::firstOrCreate([
             'name' => 'Mahasiswa',
             'guard_name' => 'web'
         ]);
-        
+
         $developer->givePermissionTo(Permission::all());
         $admin->givePermissionTo([
             'read-dashboard',
@@ -57,6 +57,7 @@ class RoleSeeder extends Seeder
             'read-topik', 'create-topik', 'update-topik', 'delete-topik',
             'read-jenis', 'create-jenis', 'update-jenis', 'delete-jenis',
             'read-ruangan', 'create-ruangan', 'update-ruangan', 'delete-ruangan',
+            'read-sesi-ujian', 'create-sesi-ujian', 'update-sesi-ujian', 'delete-sesi-ujian',
             'read-periode', 'create-periode', 'update-periode', 'delete-periode','change-periode',
             'read-users', 'create-users', 'update-users', 'delete-users',
             'read-kuota', 'update-kuota',
@@ -78,7 +79,7 @@ class RoleSeeder extends Seeder
             'read-daftar-ta',
             'read-rekomendasi-topik','validate-rekomendasi-topik',
         ]);
-        
+
         $dosen->givePermissionTo([
             'read-dashboard',
             'read-rekomendasi-topik','create-rekomendasi-topik','update-rekomendasi-topik','delete-rekomendasi-topik',
@@ -106,8 +107,8 @@ class RoleSeeder extends Seeder
             'read-rekomendasi-topik','take-rekomendasi-topik',
             'read-topik-yang-diambil','cancel-topik-yang-diambil',
             'read-pengajuan-tugas-akhir', 'create-pengajuan-tugas-akhir', 'update-pengajuan-tugas-akhir',
-            'read-jadwal-seminar', 
-            'read-daftar-sidang', 
+            'read-jadwal-seminar',
+            'read-daftar-sidang',
             'read-rekapitulasi-nilai',
             'read-nilai',
             'read-revisi',
