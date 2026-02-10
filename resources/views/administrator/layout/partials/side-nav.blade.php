@@ -81,6 +81,22 @@
                     </li>
                     @endcan
                 @endif
+                @canany(['read-halangan-rutin', 'read-halangan-tanggal'])
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect">
+                        <i class="mdi mdi-calendar-clock"></i>
+                        <span>Kesediaan Waktu</span>
+                    </a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        @can(['read-halangan-rutin'])
+                        <li><a href="{{ route('apps.halangan-rutin') }}">Jadwal Rutin</a></li>
+                        @endcan
+                        {{-- @can(['read-halangan-tanggal'])
+                        <li><a href="{{ route('apps.halangan-tanggal') }}">Ijin / Tanggal</a></li>
+                        @endcan --}}
+                    </ul>
+                </li>
+                @endcanany
 
                 @if(in_array(session('switchRoles'), ['Mahasiswa','Developer']))
                     @can(['read-pengajuan-tugas-akhir'])

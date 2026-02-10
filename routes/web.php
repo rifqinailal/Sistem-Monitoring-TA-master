@@ -44,6 +44,7 @@ use App\Http\Controllers\Administrator\PembagianDosen\PembagianDosenController;
 use App\Http\Controllers\Administrator\DaftarBimbingan\DaftarBimbinganController;
 use App\Http\Controllers\Administrator\RekomendasiTopik\RekomendasiTopikController;
 use App\Http\Controllers\Administrator\SesiUjian\SesiUjianController;
+use App\Http\Controllers\Administrator\HalanganRutin\HalanganRutinController;
 
 /*
 |--------------------------------------------------------------------------
@@ -142,6 +143,14 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('show/{id}', [SesiUjianController::class, 'show'])->name('apps.sesi-ujian.show');
         Route::post('update/{id}', [SesiUjianController::class, 'update'])->name('apps.sesi-ujian.update')->middleware('can:update-sesi-ujian');
         Route::get('destroy/{id}', [SesiUjianController::class, 'destroy'])->name('apps.sesi-ujian.delete')->middleware('can:delete-sesi-ujian');
+    });
+
+    Route::prefix('halangan-rutin')->middleware('can:read-halangan-rutin')->group(function () {
+        Route::get('', [HalanganRutinController::class, 'index'])->name('apps.halangan-rutin');
+        Route::post('store', [HalanganRutinController::class, 'store'])->name('apps.halangan-rutin.store')->middleware('can:create-halangan-rutin');
+        Route::get('show/{id}', [HalanganRutinController::class, 'show'])->name('apps.halangan-rutin.show');
+        Route::post('update-jadwal', [HalanganRutinController::class, 'update'])->name('apps.halangan-rutin.update')->middleware('can:update-halangan-rutin');
+        Route::get('destroy/{id}', [HalanganRutinController::class, 'destroy'])->name('apps.halangan-rutin.delete')->middleware('can:delete-halangan-rutin');
     });
 
     Route::prefix('topik')->middleware('can:read-topik')->group(function () {
