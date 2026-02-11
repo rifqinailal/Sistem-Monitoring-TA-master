@@ -45,6 +45,7 @@ use App\Http\Controllers\Administrator\DaftarBimbingan\DaftarBimbinganController
 use App\Http\Controllers\Administrator\RekomendasiTopik\RekomendasiTopikController;
 use App\Http\Controllers\Administrator\SesiUjian\SesiUjianController;
 use App\Http\Controllers\Administrator\HalanganRutin\HalanganRutinController;
+use App\Http\Controllers\Administrator\HalanganTanggal\HalanganTanggalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +152,14 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('show/{id}', [HalanganRutinController::class, 'show'])->name('apps.halangan-rutin.show');
         Route::post('update-jadwal', [HalanganRutinController::class, 'update'])->name('apps.halangan-rutin.update')->middleware('can:update-halangan-rutin');
         Route::get('destroy/{id}', [HalanganRutinController::class, 'destroy'])->name('apps.halangan-rutin.delete')->middleware('can:delete-halangan-rutin');
+    });
+
+    Route::prefix('halangan-tanggal')->middleware('can:read-halangan-tanggal')->group(function () {
+        Route::get('', [HalanganTanggalController::class, 'index'])->name('apps.halangan-tanggal');
+        Route::post('store', [HalanganTanggalController::class, 'store'])->name('apps.halangan-tanggal.store')->middleware('can:create-halangan-tanggal');
+        Route::get('show/{id}', [HalanganTanggalController::class, 'show'])->name('apps.halangan-tanggal.show');
+        Route::post('update-data', [HalanganTanggalController::class, 'update'])->name('apps.halangan-tanggal.update')->middleware('can:update-halangan-tanggal');
+        Route::get('destroy/{id}', [HalanganTanggalController::class, 'destroy'])->name('apps.halangan-tanggal.delete')->middleware('can:delete-halangan-tanggal');
     });
 
     Route::prefix('topik')->middleware('can:read-topik')->group(function () {

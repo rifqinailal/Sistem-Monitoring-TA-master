@@ -1,0 +1,90 @@
+function tambahData(urlStore) {
+    $('#formHalangan')[0].reset();
+    $('#modalLabel').text('Tambah Ijin / Halangan');
+    $('#original_ids').val('');
+
+    if ($.fn.select2) {
+        $('#dosen_id').val('').trigger('change');
+    }
+
+    $('.sesi-checkbox').prop('checked', false);
+
+    $('#formHalangan').attr('action', urlStore);
+
+    $('#modalTambah').modal('show');
+}
+
+function editData(id, urlShow, urlUpdate) {
+    $('#formHalangan')[0].reset();
+    $('#modalLabel').text('Edit Ijin / Halangan');
+    $('#formHalangan').attr('action', urlUpdate);
+
+    $.ajax({
+        url: urlShow,
+        type: "GET",
+        dataType: "json",
+        success: function (response) {
+            console.log("Data Edit:", response);
+
+            if ($.fn.select2 && $('#dosen_id').length) {
+                $('#dosen_id').val(response.dosen_id).trigger('change');
+            }
+
+            $('#tanggal').val(response.tanggal);
+            $('#keterangan').val(response.keterangan);
+            $('#original_ids').val(response.original_ids);
+
+            $('.sesi-checkbox').prop('checked', false);
+            if (response.selected_sesi) {
+                var arr = Array.isArray(response.selected_sesi) ? response.selected_sesi : Object.values(response.selected_sesi);
+                arr.forEach(function(val) {
+                    $('input.sesi-checkbox[value="' + val.toString() + '"]').prop('checked', true);
+                });
+            }
+
+            $('#modalTambah').modal('show');
+        },
+        error: function (xhr) {
+            console.error(xhr);
+            Swal.fire('Error', 'Gagal mengambil data', 'error');
+        }
+    });
+}
+
+function hapusHalangan(id, url) {
+    Swal.fire({
+        title: "Hapus Data Ini?",
+        text: "Data ijin pada tanggal ini akan dihapus.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, Hapus!"
+    }).then((result) => {
+        if (result.isConfirmed || result.value) {
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function (data) {
+                    Swal.fire('Berhasil!', data.message, 'success').then(() => {
+                        window.location.reload();
+                    });
+                },
+                error: function (xhr) {
+                    var msg = 'Gagal menghapus data';
+                    if(xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    Swal.fire('Error', msg, 'error');
+                }
+            });
+        }
+    });
+}
+
+$(document).ready(function() {
+    if ($.fn.select2) {
+        $('.select2').select2({
+            dropdownParent: $('#modalTambah'),
+            width: '100%'
+        });
+    }
+});

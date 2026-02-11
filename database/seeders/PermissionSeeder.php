@@ -145,6 +145,11 @@ class PermissionSeeder extends Seeder
             ["name" => 'create-halangan-rutin', 'display_name' => 'Buat Halangan Rutin'],
             ["name" => 'update-halangan-rutin', 'display_name' => 'Ubah Halangan Rutin'],
             ["name" => 'delete-halangan-rutin', 'display_name' => 'Hapus Halangan Rutin'],
+
+            ["name" => 'read-halangan-tanggal', 'display_name' => 'Lihat Halangan Tanggal'],
+            ["name" => 'create-halangan-tanggal', 'display_name' => 'Buat Halangan Tanggal'],
+            ["name" => 'update-halangan-tanggal', 'display_name' => 'Ubah Halangan Tanggal'],
+            ["name" => 'delete-halangan-tanggal', 'display_name' => 'Hapus Halangan Tanggal'],
         ]);
         $this->insertPermission($permissions);
     }

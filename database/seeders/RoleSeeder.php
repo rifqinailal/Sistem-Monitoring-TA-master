@@ -70,6 +70,7 @@ class RoleSeeder extends Seeder
             'read-pemberkasan','create-pemberkasan',
             'read-daftar-sidang','create-daftar-sidang','update-daftar-sidang','delete-daftar-sidang',
             'read-halangan-rutin', 'create-halangan-rutin', 'update-halangan-rutin', 'delete-halangan-rutin',
+            'read-halangan-tanggal', 'create-halangan-tanggal', 'update-halangan-tanggal', 'delete-halangan-tanggal',
         ]);
 
         $kaprodi->givePermissionTo([
@@ -92,6 +93,7 @@ class RoleSeeder extends Seeder
             'read-revisi','create-revisi',
             'read-rekapitulasi-nilai',
             'read-halangan-rutin', 'create-halangan-rutin', 'update-halangan-rutin', 'delete-halangan-rutin',
+            'read-halangan-tanggal', 'create-halangan-tanggal', 'update-halangan-tanggal', 'delete-halangan-tanggal',
         ]);
 
         $kajur->givePermissionTo([

@@ -91,9 +91,9 @@
                         @can(['read-halangan-rutin'])
                         <li><a href="{{ route('apps.halangan-rutin') }}">Jadwal Rutin</a></li>
                         @endcan
-                        {{-- @can(['read-halangan-tanggal'])
-                        <li><a href="{{ route('apps.halangan-tanggal') }}">Ijin / Tanggal</a></li>
-                        @endcan --}}
+                        @can(['read-halangan-tanggal'])
+                        <li><a href="{{ route('apps.halangan-tanggal') }}">Ijin Tanggal</a></li>
+                        @endcan
                     </ul>
                 </li>
                 @endcanany
