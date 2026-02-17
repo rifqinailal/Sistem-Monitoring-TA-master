@@ -47,11 +47,16 @@
 }(jQuery);
 
 
-$('.select2').select2({
-    // placeholder: 'Select an option'
-});
 
-$('.select2-selection__rendered').attr('style', '')
+$(document).ready(function() {
+    // Cek apakah library select2 sudah dimuat sebelum menjalankannya
+    if ($.fn.select2) {
+        $('.select2').select2({
+            // placeholder: 'Select an option'
+        });
+        $('.select2-selection__rendered').attr('style', '');
+    }
+});
 
 // filepond
 FilePond.registerPlugin(FilePondPluginImagePreview);

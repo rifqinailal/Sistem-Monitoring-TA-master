@@ -182,54 +182,76 @@ class DashboardController extends Controller
 
     private function mahasiswaRole(): array
     {
-        $tugasAkhir = TugasAkhir::where('mahasiswa_id', getInfoLogin()->userable->id)->orderBy('id', 'desc')->first();
-        $jadwalSeminar = JadwalSeminar::where('tugas_akhir_id', $tugasAkhir->id)->first();
-        $jadwalSidang = Sidang::where('tugas_akhir_id', $tugasAkhir->id)->first();
+        // Ambil data user yang login
+        $user = getInfoLogin();
+
+        // CEK 1: Pastikan data profil mahasiswa (userable) ada
+        if (!$user->userable) {
+            return [
+                'tugasAkhir' => null,
+                'jadwal' => [],
+                'mods' => 'dashboard',
+                'topik' => [],
+            ];
+        }
+
+        // Ambil data Tugas Akhir
+        $tugasAkhir = TugasAkhir::where('mahasiswa_id', $user->userable->id)
+                        ->orderBy('id', 'desc')
+                        ->first();
 
         $jadwal = [];
 
-        if ($jadwalSeminar && $jadwalSeminar->tanggal !== null) {
-            $jadwal[] = [
-                'type' => 'Seminar',
-                'hari' => isset($jadwalSeminar->tanggal)
-                    ? \Carbon\Carbon::parse($jadwalSeminar->tanggal)->isoFormat('dddd')
-                    : '-',
-                'tanggal' => isset($jadwalSeminar->tanggal)
-                    ? \Carbon\Carbon::parse($jadwalSeminar->tanggal)->isoFormat('D MMMM Y')
-                    : '-',
-                'jam' => (isset($jadwalSeminar->jam_mulai) && isset($jadwalSeminar->jam_selesai))
-                    ? \Carbon\Carbon::parse($jadwalSeminar->jam_mulai)->format('H:i') . ' - ' . \Carbon\Carbon::parse($jadwalSeminar->jam_selesai)->format('H:i')
-                    : '-',
-                'ruangan' => isset($jadwalSeminar->ruangan->nama_ruangan)
-                    ? $jadwalSeminar->ruangan->nama_ruangan
-                    : '-',
-            ];
+        // CEK 2: Kodingan asli crash disini karena tidak ada if ($tugasAkhir)
+        // Kita bungkus logika jadwal di dalam pengecekan ini
+        if ($tugasAkhir) {
+            $jadwalSeminar = JadwalSeminar::where('tugas_akhir_id', $tugasAkhir->id)->first();
+            $jadwalSidang = Sidang::where('tugas_akhir_id', $tugasAkhir->id)->first();
+
+            if ($jadwalSeminar && $jadwalSeminar->tanggal !== null) {
+                $jadwal[] = [
+                    'type' => 'Seminar',
+                    'hari' => isset($jadwalSeminar->tanggal)
+                        ? \Carbon\Carbon::parse($jadwalSeminar->tanggal)->isoFormat('dddd')
+                        : '-',
+                    'tanggal' => isset($jadwalSeminar->tanggal)
+                        ? \Carbon\Carbon::parse($jadwalSeminar->tanggal)->isoFormat('D MMMM Y')
+                        : '-',
+                    'jam' => (isset($jadwalSeminar->jam_mulai) && isset($jadwalSeminar->jam_selesai))
+                        ? \Carbon\Carbon::parse($jadwalSeminar->jam_mulai)->format('H:i') . ' - ' . \Carbon\Carbon::parse($jadwalSeminar->jam_selesai)->format('H:i')
+                        : '-',
+                    'ruangan' => isset($jadwalSeminar->ruangan->nama_ruangan)
+                        ? $jadwalSeminar->ruangan->nama_ruangan
+                        : '-',
+                ];
+            }
+
+            if ($jadwalSidang && $jadwalSidang->tanggal !== null) {
+                $jadwal[] = [
+                    'type' => 'Sidang',
+                    'hari' => isset($jadwalSidang->tanggal)
+                        ? \Carbon\Carbon::parse($jadwalSidang->tanggal)->isoFormat('dddd')
+                        : '-',
+                    'tanggal' => isset($jadwalSidang->tanggal)
+                        ? \Carbon\Carbon::parse($jadwalSidang->tanggal)->isoFormat('D MMMM Y')
+                        : '-',
+                    'jam' => (isset($jadwalSidang->jam_mulai) && isset($jadwalSidang->jam_selesai))
+                        ? \Carbon\Carbon::parse($jadwalSidang->jam_mulai)->format('H:i') . ' - ' . \Carbon\Carbon::parse($jadwalSidang->jam_selesai)->format('H:i')
+                        : '-',
+                    'ruangan' => isset($jadwalSidang->ruangan->nama_ruangan)
+                        ? $jadwalSidang->ruangan->nama_ruangan
+                        : '-',
+                ];
+            }
         }
 
-        if ($jadwalSidang && $jadwalSidang->tanggal !== null) {
-            $jadwal[] = [
-                'type' => 'Sidang',
-                'hari' => isset($jadwalSidang->tanggal)
-                    ? \Carbon\Carbon::parse($jadwalSidang->tanggal)->isoFormat('dddd')
-                    : '-',
-                'tanggal' => isset($jadwalSidang->tanggal)
-                    ? \Carbon\Carbon::parse($jadwalSidang->tanggal)->isoFormat('D MMMM Y')
-                    : '-',
-                'jam' => (isset($jadwalSidang->jam_mulai) && isset($jadwalSidang->jam_selesai))
-                    ? \Carbon\Carbon::parse($jadwalSidang->jam_mulai)->format('H:i') . ' - ' . \Carbon\Carbon::parse($jadwalSidang->jam_selesai)->format('H:i')
-                    : '-',
-                'ruangan' => isset($jadwalSidang->ruangan->nama_ruangan)
-                    ? $jadwalSidang->ruangan->nama_ruangan
-                    : '-',
-            ];
-        }
-
+        // Ambil rekomendasi topik (tetap dijalankan meski belum punya TA)
         $tawaran = RekomendasiTopik::where('status', 'Disetujui')->whereHas('ambilTawaran', function ($q) {
             $q->where('status', 'Disetujui');
         }, '<', DB::raw('kuota'))->take(5)->get();
-        // dd($tawaran);
+
         $data = [
-            'tugasAkhir' => $tugasAkhir,
+            'tugasAkhir' => $tugasAkhir, // Ini akan null jika belum ada, view harus handle null ini
             'jadwal' => $jadwal,
             'mods' => 'dashboard',
             'topik' => $tawaran,
