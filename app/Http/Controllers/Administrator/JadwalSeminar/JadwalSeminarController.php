@@ -23,6 +23,7 @@ use App\Models\Revisi;
 use App\Models\Sidang;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\AutoScheduling\ScheduleService;
 
 class JadwalSeminarController extends Controller
 {
@@ -47,17 +48,22 @@ class JadwalSeminarController extends Controller
                 });
             }
 
-            if($request->has('type') && !empty($request->type) && $request->type != 'semua') {
+            if ($request->has('type') && !empty($request->type) && $request->type != 'semua') {
                 $query = $query->wherehas('tugas_akhir', function ($q) use ($request) {
                     $q->whereTipe($request->type);
                 });
             }
 
             if ($request->has('status') && !empty($request->status)) {
-                $query = $query->where('status', $request->status)->whereHas('tugas_akhir', function ($q) use ($request) {
-                    $q->whereNull('status_sidang');
-                    $q->whereStatusPemberkasan('belum_lengkap');
-                });
+                //Jika tab draft, tampilkan yg draft dan bentrok (hasil generate yg gagal)
+                if ($request->status == 'draft') {
+                    $query = $query->whereIn('status', ['draft', 'bentrok']);
+                } else {
+                    $query = $query->where('status', $request->status)->whereHas('tugas_akhir', function ($q) use ($request) {
+                        $q->whereNull('status_sidang');
+                        $q->whereStatusPemberkasan('belum_lengkap');
+                    });
+                }
             } else {
                 if ($request->has('status_pemberkasan') && !empty($request->status_pemberkasan)) {
                     if ($request->status_pemberkasan == 'sudah_lengkap') {
@@ -247,15 +253,15 @@ class JadwalSeminarController extends Controller
                 return redirect()->back()->with(['error' => 'Periode seminar belum aktif']);
             }
 
-            $check = JadwalSeminar::whereNot('id', $jadwalSeminar->id)->whereHas('tugas_akhir', function($q) use ($jadwalSeminar) {
-                $q->whereHas('bimbing_uji', function($q) use ($jadwalSeminar) {
+            $check = JadwalSeminar::whereNot('id', $jadwalSeminar->id)->whereHas('tugas_akhir', function ($q) use ($jadwalSeminar) {
+                $q->whereHas('bimbing_uji', function ($q) use ($jadwalSeminar) {
                     $q->whereIn('dosen_id', $jadwalSeminar->tugas_akhir->bimbing_uji()->pluck('dosen_id')->toArray());
                 });
             })->whereDate('tanggal', $request->tanggal)->whereStatus('sudah_terjadwal')->where('jam_mulai', '>=', $request->jam_mulai)->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])->first();
 
-            if(is_null($check)) {
-                $check = Sidang::whereHas('tugas_akhir', function($q) use ($jadwalSeminar) {
-                    $q->whereHas('bimbing_uji', function($q) use ($jadwalSeminar) {
+            if (is_null($check)) {
+                $check = Sidang::whereHas('tugas_akhir', function ($q) use ($jadwalSeminar) {
+                    $q->whereHas('bimbing_uji', function ($q) use ($jadwalSeminar) {
                         $q->whereIn('dosen_id', $jadwalSeminar->tugas_akhir->bimbing_uji->pluck('dosen_id')->toArray());
                     });
                 })->whereDate('tanggal', $request->tanggal)->whereStatus('sudah_terjadwal')->where('jam_mulai', '>=', $request->jam_mulai)->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])->first();
@@ -263,14 +269,14 @@ class JadwalSeminarController extends Controller
 
             $checkRuangan = JadwalSeminar::whereNot('id', $jadwalSeminar->id)->whereRuanganId($request->ruangan)->whereDate('tanggal', $request->tanggal)->whereStatus('sudah_terjadwal')->where('jam_mulai', '>=', $request->jam_mulai)->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])->first();
 
-            if(is_null($checkRuangan)) {
+            if (is_null($checkRuangan)) {
                 $checkRuangan = Sidang::whereRuanganId($request->ruangan)->whereDate('tanggal', $request->tanggal)->whereStatus('sudah_terjadwal')->where('jam_mulai', '>=', $request->jam_mulai)->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])->first();
             }
 
             if (!is_null($check)) {
                 return redirect()->back()->withInput($request->all())->with(['error' => 'Ada jadwal pada waktu tersebut']);
             }
-            if(!is_null($checkRuangan)) {
+            if (!is_null($checkRuangan)) {
                 return redirect()->back()->withInput($request->all())->with(['error' => 'Ruangan sudah digunakan pada waktu tersebut']);
             }
 
@@ -286,7 +292,7 @@ class JadwalSeminarController extends Controller
             // delete penilaian
             $rating = Penilaian::whereIn('bimbing_uji_id', $jadwalSeminar->tugas_akhir->bimbing_uji->pluck('id'));
 
-            if($rating->count() > 0) {
+            if ($rating->count() > 0) {
                 $rating->delete();
             }
 
@@ -504,7 +510,8 @@ class JadwalSeminarController extends Controller
 
     public function reset(Request $request, JadwalSeminar $jadwalSeminar)
     {
-        try {$jadwalSeminar->update([
+        try {
+            $jadwalSeminar->update([
                 'ruangan_id' => null,
                 'tanggal' => null,
                 'jam_mulai' => null,
@@ -515,6 +522,135 @@ class JadwalSeminarController extends Controller
             return redirect()->route('apps.jadwal-seminar')->with(['success' => 'Berhasil mereset jadwal seminar']);
         } catch (Exception $e) {
             return redirect()->back()->with(['error' => $e->getMessage()]);
+        }
+    }
+
+
+    // FITUR AUTO SCHEDULING (GENERATE, PUBLISH, RESET)
+
+    public function generateAuto(Request $request, ScheduleService $scheduleService)
+    {
+        // Validasi input tanggal dan ID yang dipilih
+        $request->validate([
+            'start_date'   => 'required|date',
+            'end_date'     => 'required|date|after_or_equal:start_date',
+            'selected_ids' => 'required|array|min:1',
+        ], [
+            'start_date.required' => 'Tanggal mulai harus diisi.',
+            'end_date.required' => 'Tanggal akhir harus diisi.',
+            'end_date.after_or_equal' => 'Tanggal akhir tidak boleh lebih kecil dari tanggal mulai.',
+            'selected_ids.required' => 'Pilih minimal satu mahasiswa untuk di-generate.',
+        ]);
+
+        try {
+            // Menggunakan ID dari checkbox di form UI
+            $selectedIds = $request->selected_ids;
+
+            // Panggil Service
+            $result = $scheduleService->generate(
+                null,
+                $request->start_date,
+                $request->end_date,
+                $selectedIds,
+                'seminar'
+            );
+
+            if ($result['status'] == 'success') {
+                return redirect()->route('apps.jadwal-seminar', ['status' => 'draft'])->with(['success' => $result['message']]);
+            }
+
+            return redirect()->back()->with(['error' => $result['message']]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat generate: ' . $e->getMessage()]);
+        }
+    }
+
+    public function publishAuto(Request $request)
+    {
+        try {
+
+            $publishedCount = JadwalSeminar::where('status', 'draft')->update([
+                'status' => 'sudah_terjadwal',
+                'keterangan' => 'Jadwal diterbitkan otomatis'
+            ]);
+
+            if ($publishedCount == 0) {
+                return redirect()->back()->with(['error' => 'Tidak ada jadwal berstatus Draft yang bisa diterbitkan.']);
+            }
+
+
+            return redirect()->route('apps.jadwal-seminar', ['status' => 'sudah_terjadwal'])
+                ->with(['success' => "Berhasil menerbitkan $publishedCount jadwal seminar."]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat publish: ' . $e->getMessage()]);
+        }
+    }
+
+    public function resetAuto(Request $request)
+    {
+        try {
+
+            $resetCount = JadwalSeminar::whereIn('status', ['draft', 'bentrok'])->update([
+                'ruangan_id'    => null,
+                'sesi_ujian_id' => null,
+                'tanggal'       => null,
+                'jam_mulai'     => null,
+                'jam_selesai'   => null,
+                'status'        => 'belum_terjadwal',
+                'keterangan'    => null
+            ]);
+
+            if ($resetCount == 0) {
+                return redirect()->back()->with(['error' => 'Tidak ada draf jadwal yang bisa di-reset.']);
+            }
+
+            return redirect()->route('apps.jadwal-seminar')
+                ->with(['success' => "Berhasil mereset $resetCount draf jadwal kembali ke Belum Terjadwal."]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat reset: ' . $e->getMessage()]);
+        }
+    }
+
+    public function createAuto(Request $request)
+    {
+        
+        $data = JadwalSeminar::with(['tugas_akhir.mahasiswa', 'tugas_akhir.bimbing_uji.dosen'])
+            ->whereIn('status', ['belum_terjadwal', 'draft', 'bentrok'])
+            ->get();
+
+        $viewData = [
+            'title' => 'Generate Jadwal Seminar Otomatis',
+            'mods' => 'jadwal_seminar',
+            'breadcrumbs' => [
+                [
+                    'title' => 'Dashboard',
+                    'url' => route('apps.dashboard')
+                ],
+                [
+                    'title' => 'Jadwal Seminar',
+                    'url' => route('apps.jadwal-seminar')
+                ],
+                [
+                    'title' => 'Generate Otomatis',
+                    'is_active' => true,
+                ]
+            ],
+            'data' => $data,
+        ];
+
+        return view('administrator.jadwal-seminar.generate', $viewData);
+    }
+    public function publishSingle(Request $request, JadwalSeminar $jadwalSeminar)
+    {
+        try {
+            $jadwalSeminar->update([
+                'status' => 'sudah_terjadwal',
+                'keterangan' => 'Jadwal diterbitkan manual oleh Admin'
+            ]);
+
+            return redirect()->back()->with(['success' => 'Berhasil menerbitkan jadwal seminar atas nama mahasiswa terkait.']);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Gagal menerbitkan: ' . $e->getMessage()]);
         }
     }
 }

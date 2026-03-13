@@ -16,7 +16,9 @@ class JadwalSeminar extends Model
         'jam_mulai',
         'jam_selesai',
         'tanggal',
+        'sesi_ujian_id',
         'status',
+        'keterangan',
     ];
 
     public function tugas_akhir(){
@@ -24,6 +26,10 @@ class JadwalSeminar extends Model
     }
     public function ruangan(){
         return $this->belongsTo(Ruangan::class);
+    }
+   public function sesi()
+    {
+        return $this->belongsTo(SesiUjian::class, 'sesi_ujian_id');
     }
     // public function hari(){
     //     return $this->belongsTo(Hari::class);

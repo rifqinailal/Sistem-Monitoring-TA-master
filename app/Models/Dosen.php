@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\DosenHalanganRutin;
+use App\Models\DosenHalanganTanggal;
 
 class Dosen extends Model
 {
@@ -22,5 +24,15 @@ class Dosen extends Model
     public function programStudi()
     {
         return $this->belongsTo(ProgramStudi::class);
+    }
+
+    public function halanganRutin()
+    {
+        return $this->hasMany(DosenHalanganRutin::class, 'dosen_id', 'id');
+    }
+
+    public function halanganTanggal()
+    {
+        return $this->hasMany(DosenHalanganTanggal::class, 'dosen_id', 'id');
     }
 }

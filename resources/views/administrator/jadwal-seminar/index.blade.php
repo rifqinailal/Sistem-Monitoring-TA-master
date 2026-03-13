@@ -55,6 +55,11 @@
                                 href="{{ route('apps.jadwal-seminar.export', ['type' => 'st_sempro']) }}">ST Sempro</a>
                         </div>
                     </div>
+                    @can('generate-jadwal-seminar')
+                        <a href="{{ route('apps.jadwal-seminar.create-auto') }}" class="btn btn-warning mb-2">
+                            <i class="bx bx-cog bx-spin-hover"></i> Generate Jadwal
+                        </a>
+                    @endcan
                 @endif
             </div>
             <hr>
@@ -135,6 +140,14 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link @if (request('status') == 'draft') active @endif"
+                                href="{{ route('apps.jadwal-seminar', ['status' => 'draft']) }}">
+                                <span class="d-block d-sm-none"><i class="bx bx-list-ol"></i></span>
+                                <span class="d-none d-sm-block">Hasil Generate (Draft) <span
+                                        class="badge bg-danger rounded-pill">{{ \App\Models\JadwalSeminar::whereIn('status', ['draft', 'bentrok'])->count() ?: '' }}</span></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link @if (url()->full() == route('apps.jadwal-seminar', ['status' => 'sudah_terjadwal'])) active @endif"
                                 href="{{ route('apps.jadwal-seminar', ['status' => 'sudah_terjadwal']) }}">
                                 <span class="d-block d-sm-none"><i class="bx bx-list-check"></i></span>
@@ -158,6 +171,29 @@
                     </ul>
                 @endcan
             @endif
+            @if (request('status') == 'draft')
+                <div class="alert alert-info mt-3">
+                    <strong>Informasi:</strong> Jadwal di bawah ini masih berupa <b>Draf</b> dan belum bisa dilihat oleh
+                    mahasiswa/dosen. Silakan periksa hasilnya. Jika sudah sesuai, klik "Terbitkan". Jika masih banyak yang
+                    bentrok, Anda bisa mengeditnya manual atau me-resetnya.
+                </div>
+                <div class="d-flex justify-content-end gap-2 mb-3 mt-3">
+                    <form action="{{ route('apps.jadwal-seminar.reset-auto') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Yakin ingin mereset/membatalkan semua hasil generate ini?')">
+                            <i class="bx bx-reset"></i> Batalkan & Reset
+                        </button>
+                    </form>
+                    <form action="{{ route('apps.jadwal-seminar.publish-auto') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success"
+                            onclick="return confirm('Yakin ingin menerbitkan jadwal yang berstatus AMAN? (Jadwal bentrok tidak akan diterbitkan)')">
+                            <i class="bx bx-check-double"></i> Terbitkan Jadwal
+                        </button>
+                    </form>
+                </div>
+            @endif
 
             <div class="table-responsive">
                 <table class="table table-striped" id="datatable">
@@ -173,6 +209,9 @@
                             @endif
                             <th width="20%">Dosen</th>
                             <th>Ruangan</th>
+                            @if (request('status') == 'draft')
+                                <th>Status Generate</th>
+                            @endif
                             @if (getInfoLogin()->hasRole('Admin'))
                                 <th>Status</th>
                             @endif
@@ -267,19 +306,27 @@
                                         class="badge small mb-1 badge-soft-secondary">{{ isset($item->tugas_akhir) ? ($item->tugas_akhir->tipe == 'I' ? 'Individu' : 'Kelompok') : '' }}</span>
                                 </td>
                                 @if (getInfoLogin()->hasRole('Admin'))
-                                    <td>{{ !is_null($item->tugas_akhir->periode_ta) ? $item->tugas_akhir->periode_ta->nama : '-' }}</td>
+                                    <td>{{ !is_null($item->tugas_akhir->periode_ta) ? $item->tugas_akhir->periode_ta->nama : '-' }}
+                                    </td>
                                 @endif
                                 <td>
                                     @php
                                         $ratingRecap = 0;
 
-                                        $penguji = $item->tugas_akhir->bimbing_uji()->where('jenis','Penguji')->get();
+                                        $penguji = $item->tugas_akhir->bimbing_uji()->where('jenis', 'Penguji')->get();
                                         $revisions = $penguji->flatMap(function ($bimbing) {
                                             return $bimbing->revisi->where('type', 'Seminar');
                                         });
-                                        $allMentorValidated = isset($revisions) && $revisions->isNotEmpty() && $revisions->every(fn($revisi) => $revisi->is_mentor_validation);
+                                        $allMentorValidated =
+                                            isset($revisions) &&
+                                            $revisions->isNotEmpty() &&
+                                            $revisions->every(fn($revisi) => $revisi->is_mentor_validation);
                                     @endphp
-                                    <p class="fw-bold small m-0">Pembimbing  @if (isset($revisions) && $revisions->isNotEmpty()) <i class="bx {{ $allMentorValidated ? 'bx-check-circle text-success' : 'bx-time' }}"></i> @endif </p>
+                                    <p class="fw-bold small m-0">Pembimbing @if (isset($revisions) && $revisions->isNotEmpty())
+                                            <i
+                                                class="bx {{ $allMentorValidated ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                        @endif
+                                    </p>
                                     <ol>
                                         @for ($i = 0; $i < 2; $i++)
                                             @if ($item->tugas_akhir->bimbing_uji()->where('jenis', 'pembimbing')->count() > $i)
@@ -300,7 +347,8 @@
                                                             <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
                                                             <span class="text-muted">Nilai :
                                                                 <strong>{{ number_format($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
+                                                                <span
+                                                                    style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
 
                                                             </span>
                                                         </li>
@@ -322,13 +370,17 @@
                                                             <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
                                                             <span class="text-muted">Nilai :
                                                                 <strong>{{ number_format($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                <span
+                                                                    style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
                                                                 @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
                                                                     @php
-                                                                        $penguji1 = $pemb->revisi->where('type', 'Seminar')->first();
+                                                                        $penguji1 = $pemb->revisi
+                                                                            ->where('type', 'Seminar')
+                                                                            ->first();
                                                                     @endphp
                                                                     @if ($penguji1)
-                                                                        <i class="bx {{ $penguji1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                        <i
+                                                                            class="bx {{ $penguji1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
                                                                     @endif
                                                                 @endif
                                                             </span>
@@ -340,15 +392,19 @@
                                                             <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
                                                             <span class="text-muted">Nilai :
                                                                 <strong>{{ number_format($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                <span
+                                                                    style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Seminar')->count() > 0 ? $pemb->penilaian()->where('type', 'Seminar')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
                                                                 @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
-                                                                @php
-                                                                    $penguji2 = $pemb->revisi->where('type', 'Seminar')->first();
-                                                                @endphp
-                                                                @if ($penguji2)
-                                                                    <i class="bx {{ $penguji2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                    @php
+                                                                        $penguji2 = $pemb->revisi
+                                                                            ->where('type', 'Seminar')
+                                                                            ->first();
+                                                                    @endphp
+                                                                    @if ($penguji2)
+                                                                        <i
+                                                                            class="bx {{ $penguji2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                    @endif
                                                                 @endif
-                                                            @endif
                                                             </span>
                                                         </li>
                                                     @endif
@@ -372,62 +428,123 @@
                                         {{ $item->jam_selesai ? Carbon\Carbon::parse($item->jam_selesai)->format('H:i') : '' }}
                                     </p>
                                 </td>
+                                @if (request('status') == 'draft')
+                                    <td>
+                                        @if ($item->status == 'bentrok')
+                                            <span class="badge bg-danger mb-1"><i class="bx bx-error-circle"></i> Bentrok</span>
+                                            <p class="text-danger small m-0 fw-bold">{{ $item->keterangan ?? 'Jadwal tidak ditemukan karena padat.' }}</p>
+                                        @else
+                                            <span class="badge bg-success mb-1"><i class="bx bx-check-circle"></i> Aman (Draft)</span>
+                                            <p class="text-success small m-0">Siap diterbitkan.</p>
+                                        @endif
+                                    </td>
+                                @endif
+
+                                @if (getInfoLogin()->hasRole('Admin') && request('status') != 'draft')
+                                    <td class="text-align-center justify-content-center">
+                                        <p style="white-space: nowrap"
+                                            class="font-size-12 mb-0 {{ $item->tugas_akhir->status_pemberkasan == 'sudah_lengkap' || !is_null($item->tugas_akhir->status_sidang) ? 'badge badge-soft-success text-success' : 'badge badge-soft-danger text-danger' }}">
+                                            {{ $item->tugas_akhir->status_pemberkasan == 'sudah_lengkap' || !is_null($item->tugas_akhir->status_sidang) ? 'Berkas sudah lengkap' : 'Berkas belum lengkap' }}
+                                        </p>
+                                        @if ($item->tugas_akhir->status_seminar == 'retrial')
+                                            <p style="white-space: nowrap" class="font-size-12 badge badge-soft-warning">
+                                                Sempro Ulang
+                                            </p>
+                                        @endif
+                                    </td>
+                                @endif
+
+                                {{-- <td class="mb-3 text-center"></td> --}}
                                 @if (getInfoLogin()->hasRole('Admin'))
                                     <td class="text-align-center justify-content-center">
                                         <p style="white-space: nowrap"
                                             class="font-size-12 mb-0 {{ $item->tugas_akhir->status_pemberkasan == 'sudah_lengkap' || !is_null($item->tugas_akhir->status_sidang) ? 'badge badge-soft-success text-success' : 'badge badge-soft-danger text-danger' }}">
                                             {{ $item->tugas_akhir->status_pemberkasan == 'sudah_lengkap' || !is_null($item->tugas_akhir->status_sidang) ? 'Berkas sudah lengkap' : 'Berkas belum lengkap' }}
                                         </p>
-                                        @if($item->tugas_akhir->status_seminar == 'retrial')
-                                        <p style="white-space: nowrap"
-                                            class="font-size-12 badge badge-soft-warning">
-                                            Sempro Ulang
-                                        </p>
+                                        @if ($item->tugas_akhir->status_seminar == 'retrial')
+                                            <p style="white-space: nowrap" class="font-size-12 badge badge-soft-warning">
+                                                Sempro Ulang
+                                            </p>
                                         @endif
                                     </td>
                                 @endif
                                 <td class="mb-3 text-center">
-                                    @if (getInfoLogin()->hasRole('Admin'))
-                                        @if ($item->status != 'telah_seminar')
-                                            @can('update-jadwal-seminar')
-                                                <a href="{{ route('apps.jadwal-seminar.edit', ['jadwalSeminar' => $item->id]) }}"
-                                                    class="btn btn-sm btn-primary mb-2"><i
-                                                        class="bx bx-calendar-event"></i></a>
-                                            @endcan
-                                        @endif
-                                        @if ($item->status == 'sudah_terjadwal')
-                                            <a href="javascript:void(0)"
-                                                onclick="reset('{{ $item->id }}', '{{ route('apps.jadwal-seminar.reset', ['jadwalSeminar' => $item->id]) }}')"
-                                                class="btn btn-sm btn-danger mb-2" title="Reset Jadwal Seminar"><i
-                                                    class="bx bx-reset"></i></a>
-                                        @endif
-                                        @if ($item->status == 'telah_seminar')
-                                            <a href="{{ route('apps.jadwal-seminar.show', $item) }}"
-                                                class="btn btn-sm btn-outline-warning mb-2" title="Detail"><i
-                                                    class="bx bx-show"></i></a>
-                                        @endif
-                                        @if ($item->tugas_akhir->status_pemberkasan != 'sudah_lengkap' && is_null($item->tugas_akhir->status_sidang))
-                                            <a href="javascript:void(0)"
-                                                onclick="validasiFile('{{ $item->id }}', '{{ route('apps.jadwal-seminar.validate', $item->id) }}')"
-                                                class="btn btn-sm btn-outline-success mb-2" title="Validasi Berkas"><i
-                                                    class="bx bx-pencil"></i></a>
-                                        @endif
-                                        @if($item->status == 'telah_seminar' && $item->tugas_akhir->status_pemberkasan != 'sudah_lengkap' && is_null($item->tugas_akhir->status_sidang))
-                                            <button class="btn btn-outline-warning btn-sm mb-1" type="button" data-bs-toggle="modal" data-bs-target="#myModal">Setujui?</button>
-                                        @endif
-                                    @endif
-
-                                    @if (getInfoLogin()->hasRole('Mahasiswa'))
-                                        <a href="{{ route('apps.jadwal-seminar.detail', $item->id) }}" class="btn btn-sm btn-outline-primary my-1"><i class="bx bx-show" title="Detail"></i></a>
-                                        @if (($item->tugas_akhir->status_seminar != 'reject'))
-                                            <a href="javascript:void(0);"onclick="uploadFileSeminar('{{ $item->id }}', '{{ route('apps.jadwal-seminar.unggah-berkas', $item->id) }}')" class="btn btn-sm btn-outline-dark">
-                                                <i class="bx bx-file"></i>
-                                                Unggah
+                                    @if ($item->status == 'draft' || $item->status == 'bentrok')
+                                        @can('update-jadwal-seminar')
+                                            <a href="{{ route('apps.jadwal-seminar.edit', ['jadwalSeminar' => $item->id]) }}"
+                                                class="btn btn-sm btn-primary mb-2" title="Edit Manual">
+                                                <i class="bx bx-pencil"></i>
                                             </a>
+                                        @endcan
+
+                                        <a href="javascript:void(0)"
+                                            onclick="reset('{{ $item->id }}', '{{ route('apps.jadwal-seminar.reset', ['jadwalSeminar' => $item->id]) }}')"
+                                            class="btn btn-sm btn-danger mb-2"
+                                            title="Batal & Kembalikan ke Belum Terjadwal">
+                                            <i class="bx bx-reset"></i>
+                                        </a>
+
+                                        @if ($item->status == 'draft')
+                                            <form action="{{ route('apps.jadwal-seminar.publish-single', $item->id) }}"
+                                                method="POST" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success mb-2"
+                                                    title="Terbitkan 1 Jadwal Ini"
+                                                    onclick="return confirm('Terbitkan jadwal ini agar bisa dilihat mahasiswa?')">
+                                                    <i class="bx bx-check-double"></i>
+                                                </button>
+                                            </form>
                                         @endif
+                                    @else
+                                        @if (getInfoLogin()->hasRole('Admin'))
+                                            @if ($item->status != 'telah_seminar')
+                                                @can('update-jadwal-seminar')
+                                                    <a href="{{ route('apps.jadwal-seminar.edit', ['jadwalSeminar' => $item->id]) }}"
+                                                        class="btn btn-sm btn-primary mb-2"><i
+                                                            class="bx bx-calendar-event"></i></a>
+                                                @endcan
+                                            @endif
+                                            @if ($item->status == 'sudah_terjadwal')
+                                                <a href="javascript:void(0)"
+                                                    onclick="reset('{{ $item->id }}', '{{ route('apps.jadwal-seminar.reset', ['jadwalSeminar' => $item->id]) }}')"
+                                                    class="btn btn-sm btn-danger mb-2" title="Reset Jadwal Seminar"><i
+                                                        class="bx bx-reset"></i></a>
+                                            @endif
+                                            @if ($item->status == 'telah_seminar')
+                                                <a href="{{ route('apps.jadwal-seminar.show', $item) }}"
+                                                    class="btn btn-sm btn-outline-warning mb-2" title="Detail"><i
+                                                        class="bx bx-show"></i></a>
+                                            @endif
+                                            @if ($item->tugas_akhir->status_pemberkasan != 'sudah_lengkap' && is_null($item->tugas_akhir->status_sidang))
+                                                <a href="javascript:void(0)"
+                                                    onclick="validasiFile('{{ $item->id }}', '{{ route('apps.jadwal-seminar.validate', $item->id) }}')"
+                                                    class="btn btn-sm btn-outline-success mb-2" title="Validasi Berkas"><i
+                                                        class="bx bx-pencil"></i></a>
+                                            @endif
+                                            @if (
+                                                $item->status == 'telah_seminar' &&
+                                                    $item->tugas_akhir->status_pemberkasan != 'sudah_lengkap' &&
+                                                    is_null($item->tugas_akhir->status_sidang))
+                                                <button class="btn btn-outline-warning btn-sm mb-1" type="button"
+                                                    data-bs-toggle="modal" data-bs-target="#myModal">Setujui?</button>
+                                            @endif
+                                        @endif
+
+                                        @if (getInfoLogin()->hasRole('Mahasiswa'))
+                                            <a href="{{ route('apps.jadwal-seminar.detail', $item->id) }}"
+                                                class="btn btn-sm btn-outline-primary my-1"><i class="bx bx-show"
+                                                    title="Detail"></i></a>
+                                            @if ($item->tugas_akhir->status_seminar != 'reject')
+                                                <a href="javascript:void(0);"onclick="uploadFileSeminar('{{ $item->id }}', '{{ route('apps.jadwal-seminar.unggah-berkas', $item->id) }}')"
+                                                    class="btn btn-sm btn-outline-dark">
+                                                    <i class="bx bx-file"></i>
+                                                    Unggah
+                                                </a>
+                                            @endif
+                                        @endif
+                                        @include('administrator.jadwal-seminar.partials.modal')
+                                        @include('administrator.jadwal.partials.modal')
                                     @endif
-                                    @include('administrator.jadwal-seminar.partials.modal')
-                                    @include('administrator.jadwal.partials.modal')
                                 </td>
                             </tr>
                         @empty

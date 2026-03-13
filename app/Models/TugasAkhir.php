@@ -34,4 +34,9 @@ class TugasAkhir extends Model
     public function sidang() {
         return $this->hasOne(Sidang::class);
     }
+ 
+    public function bimbingUjis()
+    {
+        return $this->hasMany(BimbingUji::class, 'tugas_akhir_id', 'id');
+    }
 }

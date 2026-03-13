@@ -20,6 +20,10 @@ class Sidang extends Model
     {
         return $this->belongsTo(Ruangan::class);
     }
+    public function sesi()
+    {
+        return $this->belongsTo(SesiUjian::class, 'sesi_ujian_id');
+    }
 
 }
 

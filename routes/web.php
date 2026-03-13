@@ -58,14 +58,14 @@ use App\Http\Controllers\Administrator\HalanganTanggal\HalanganTanggalController
 |
 */
 
-Route::middleware('guest')->group(function() {
-    Route::get('',[HomeController::class, 'index'])->name('home');
-    Route::get('tawaran-topik',[HomeController::class, 'topik'])->name('guest.rekomendasi-topik');
-    Route::get('tugas-akhir',[HomeController::class, 'tugasAkhir'])->name('guest.judul-tugas-akhir');
-    Route::get('jadwal',[HomeController::class, 'jadwal'])->name('guest.jadwal');
-    Route::get('get-jadwal',[HomeController::class, 'getJadwal'])->name('guest.get-jadwal');
-    Route::get('get-all-jadwal',[HomeController::class, 'getAllJadwal'])->name('guest.get-all-jadwal');
-    Route::get('get-daftar-mahasiswa',[HomeController::class, 'getDaftarMahasiswa'])->name('guest.get-daftar-mahasiswa');
+Route::middleware('guest')->group(function () {
+    Route::get('', [HomeController::class, 'index'])->name('home');
+    Route::get('tawaran-topik', [HomeController::class, 'topik'])->name('guest.rekomendasi-topik');
+    Route::get('tugas-akhir', [HomeController::class, 'tugasAkhir'])->name('guest.judul-tugas-akhir');
+    Route::get('jadwal', [HomeController::class, 'jadwal'])->name('guest.jadwal');
+    Route::get('get-jadwal', [HomeController::class, 'getJadwal'])->name('guest.get-jadwal');
+    Route::get('get-all-jadwal', [HomeController::class, 'getAllJadwal'])->name('guest.get-all-jadwal');
+    Route::get('get-daftar-mahasiswa', [HomeController::class, 'getDaftarMahasiswa'])->name('guest.get-daftar-mahasiswa');
 });
 
 Route::get('login', [AuthController::class, 'index'])->name('login')->middleware('guest');
@@ -82,7 +82,7 @@ Route::prefix('apps')->middleware('auth')->group(function () {
     Route::post('{user}/update', [ProfileController::class, 'update'])->name('apps.profile.update');
     Route::post('{user}/updatePassword', [ProfileController::class, 'updatePassword'])->name('apps.profile.update-password');
 
-    Route::prefix('dashboard')->group(function() {
+    Route::prefix('dashboard')->group(function () {
         Route::get('', [DashboardController::class, 'index'])->name('apps.dashboard');
         Route::get('get-graduated-data', [DashboardController::class, 'getGraduatedData'])->name('apps.dashboard.get-graduated-data');
         Route::get('get-student-data', [DashboardController::class, 'getStudentData'])->name('apps.dashboard.get-student-data');
@@ -98,7 +98,7 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('{user}/delete', [UserController::class, 'destroy'])->name('apps.users.delete')->middleware('can:delete-users');
     });
 
-    Route::prefix('roles')->middleware('can:read-roles')->group(function() {
+    Route::prefix('roles')->middleware('can:read-roles')->group(function () {
         Route::get('', [RoleController::class, 'index'])->name('apps.roles');
         Route::get('{role}/change', [RoleController::class, 'change'])->name('apps.roles.change')->middleware('can:read-permissions');
         Route::post('{role}/change-permission', [RoleController::class, 'changePermissions'])->name('apps.roles.change-permissions')->middleware('can:change-permissions');
@@ -111,7 +111,7 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::post('{mahasiswa}/update', [MahasiswaController::class, 'update'])->name('apps.mahasiswa.update')->middleware('can:update-mahasiswa');
         Route::get('{mahasiswa}/destroy', [MahasiswaController::class, 'destroy'])->name('apps.mahasiswa.delete')->middleware('can:delete-mahasiswa');
         Route::post('import', [MahasiswaController::class, 'import'])->name('apps.mahasiswa.import')->middleware('can:import-mahasiswa');
-        Route::get('export',[MahasiswaController::class, 'exportExcel'])->name('apps.mahasiswa.export');
+        Route::get('export', [MahasiswaController::class, 'exportExcel'])->name('apps.mahasiswa.export');
     });
 
     Route::prefix('jurusan')->middleware('can:read-jurusan')->group(function () {
@@ -231,26 +231,26 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('export', [DosenController::class, 'exportExcel'])->name('apps.dosen.export');
     });
 
-    Route::prefix('kuota-dosen')->middleware('can:read-kuota')->group( function() {
+    Route::prefix('kuota-dosen')->middleware('can:read-kuota')->group(function () {
         Route::get('', [KuotaDosenController::class, 'index'])->name('apps.kuota-dosen');
         Route::post('create-all', [KuotaDosenController::class, 'createAll'])->name('apps.kuota-dosen.create-all')->middleware('can:update-kuota');
         Route::get('{kuotaDosen}/show', [KuotaDosenController::class, 'show'])->name('apps.kuota-dosen.show');
         Route::post('{kuotaDosen}/update', [KuotaDosenController::class, 'update'])->name('apps.kuota-dosen.update')->middleware('can:update-kuota');
     });
 
-    Route::prefix('settings')->middleware('can:read-setting')->group( function() {
+    Route::prefix('settings')->middleware('can:read-setting')->group(function () {
         Route::get('', [SettingController::class, 'index'])->name('apps.settings');
         Route::get('{setting}/show', [SettingController::class, 'show'])->name('apps.settings.show');
         Route::post('{setting}/update', [SettingController::class, 'update'])->name('apps.settings.update')->middleware('can:update-setting');
     });
 
-    Route::prefix('pembagian-dosen')->middleware('can:read-pembagian-dosen')->group( function() {
+    Route::prefix('pembagian-dosen')->middleware('can:read-pembagian-dosen')->group(function () {
         Route::get('', [PembagianDosenController::class, 'index'])->name('apps.pembagian-dosen');
         Route::get('{tugasAkhir}/edit', [PembagianDosenController::class, 'edit'])->name('apps.pembagian-dosen.edit');
         Route::post('{tugasAkhir}/update', [PembagianDosenController::class, 'update'])->name('apps.pembagian-dosen.update')->middleware('can:update-pembagian-dosen');
     });
 
-    Route::prefix('daftar-tugas-akhir')->middleware('can:read-daftar-ta')->group( function() {
+    Route::prefix('daftar-tugas-akhir')->middleware('can:read-daftar-ta')->group(function () {
         Route::get('', [DaftarTaController::class, 'index'])->name('apps.daftar-ta');
         Route::get('{tugasAkhir}/show', [DaftarTaController::class, 'show'])->name('apps.daftar-ta.show')->middleware('can:read-daftar-ta');
         Route::get('{tugasAkhir}/edit', [DaftarTaController::class, 'edit'])->name('apps.daftar-ta.edit');
@@ -259,7 +259,12 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('export-tugas-akhir', [DaftarTaController::class, 'exportAll'])->name('apps.daftar-ta.export');
     });
 
-    Route::prefix('jadwal-seminar')->middleware('can:read-jadwal-seminar')->group( function() {
+    Route::prefix('jadwal-seminar')->middleware('can:read-jadwal-seminar')->group(function () {
+        Route::post('{jadwalSeminar}/publish-single', [JadwalSeminarController::class, 'publishSingle'])->name('apps.jadwal-seminar.publish-single');
+        Route::get('generate-auto', [JadwalSeminarController::class, 'createAuto'])->name('apps.jadwal-seminar.create-auto')->middleware('can:generate-jadwal-seminar');
+        Route::post('generate-auto', [JadwalSeminarController::class, 'generateAuto'])->name('apps.jadwal-seminar.generate-auto')->middleware('can:generate-jadwal-seminar');
+        Route::post('publish-auto', [JadwalSeminarController::class, 'publishAuto'])->name('apps.jadwal-seminar.publish-auto')->middleware('can:publish-jadwal-seminar');
+        Route::post('reset-auto', [JadwalSeminarController::class, 'resetAuto'])->name('apps.jadwal-seminar.reset-auto')->middleware('can:reset-jadwal-seminar');
         Route::get('', [JadwalSeminarController::class, 'index'])->name('apps.jadwal-seminar');
         Route::get('export', [JadwalSeminarController::class, 'export'])->name('apps.jadwal-seminar.export');
         Route::post('sudah-terjadwal', [JadwalSeminarController::class, 'scheduled'])->name('apps.jadwal-seminar.sudah-terjadwal');
@@ -274,75 +279,78 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         Route::get('{jadwalSeminar}/reset', [JadwalSeminarController::class, 'reset'])->name('apps.jadwal-seminar.reset');
     });
 
-    Route::prefix('kategori-nilai')->middleware('can:read-kategori-nilai')->group( function() {
-       Route::get('', [KategoriNilaiController::class, 'index'])->name('apps.kategori-nilai');
-       Route::post('store', [KategoriNilaiController::class, 'store'])->name('apps.kategori-nilai.store')->middleware('can:create-kategori-nilai');
-       Route::get('{kategoriNilai}/show', [KategoriNilaiController::class, 'show'])->name('apps.kategori-nilai.show');
-       Route::post('{kategoriNilai}/update', [KategoriNilaiController::class, 'update'])->name('apps.kategori-nilai.update')->middleware('can:update-kategori-nilai');
-       Route::get('{kategoriNilai}/destroy', [KategoriNilaiController::class, 'destroy'])->name('apps.kategori-nilai.delete')->middleware('can:delete-kategori-nilai');
+    Route::prefix('kategori-nilai')->middleware('can:read-kategori-nilai')->group(function () {
+        Route::get('', [KategoriNilaiController::class, 'index'])->name('apps.kategori-nilai');
+        Route::post('store', [KategoriNilaiController::class, 'store'])->name('apps.kategori-nilai.store')->middleware('can:create-kategori-nilai');
+        Route::get('{kategoriNilai}/show', [KategoriNilaiController::class, 'show'])->name('apps.kategori-nilai.show');
+        Route::post('{kategoriNilai}/update', [KategoriNilaiController::class, 'update'])->name('apps.kategori-nilai.update')->middleware('can:update-kategori-nilai');
+        Route::get('{kategoriNilai}/destroy', [KategoriNilaiController::class, 'destroy'])->name('apps.kategori-nilai.delete')->middleware('can:delete-kategori-nilai');
     });
 
-    Route::prefix('jadwal')->middleware('can:read-jadwal-seminar')->group( function(){
-        Route::get('{jenis?}',[JadwalController::class, 'index'])->name('apps.jadwal');
-        Route::get('{jadwal}/penilaian',[JadwalController::class, 'evaluation'])->name('apps.jadwal.penilaian');
-        Route::post('{jadwal}/revisi',[JadwalController::class, 'revisi'])->name('apps.jadwal.revisi');
-        Route::post('{jadwal}/nilai',[JadwalController::class, 'nilai'])->name('apps.jadwal.nilai');
-        Route::post('{jadwal}/update-status',[JadwalController::class, 'updateStatus'])->name('apps.jadwal.update-status');
+    Route::prefix('jadwal')->middleware('can:read-jadwal-seminar')->group(function () {
+        Route::get('{jenis?}', [JadwalController::class, 'index'])->name('apps.jadwal');
+        Route::get('{jadwal}/penilaian', [JadwalController::class, 'evaluation'])->name('apps.jadwal.penilaian');
+        Route::post('{jadwal}/revisi', [JadwalController::class, 'revisi'])->name('apps.jadwal.revisi');
+        Route::post('{jadwal}/nilai', [JadwalController::class, 'nilai'])->name('apps.jadwal.nilai');
+        Route::post('{jadwal}/update-status', [JadwalController::class, 'updateStatus'])->name('apps.jadwal.update-status');
         Route::get('{revisi}/revision-valid', [JadwalController::class, 'revisionValid'])->name('apps.jadwal.revision-valid');
         Route::get('{revisi}/mentor-validation', [JadwalController::class, 'mentorValidation'])->name('apps.jadwal.mentor-validation');
     });
 
-    Route::prefix('cetak')->group( function(){
-        Route::get('{jadwal}/revisi',[JadwalController::class, 'cetakRevisi'])->name('apps.cetak.revisi');
-        Route::get('{jadwal}/nilai',[JadwalController::class, 'cetakNilai'])->name('apps.cetak.nilai');
-        Route::get('{jadwal}/rekapitulasi',[JadwalController::class, 'cetakRekap'])->name('apps.cetak.rekapitulasi');
+    Route::prefix('cetak')->group(function () {
+        Route::get('{jadwal}/revisi', [JadwalController::class, 'cetakRevisi'])->name('apps.cetak.revisi');
+        Route::get('{jadwal}/nilai', [JadwalController::class, 'cetakNilai'])->name('apps.cetak.nilai');
+        Route::get('{jadwal}/rekapitulasi', [JadwalController::class, 'cetakRekap'])->name('apps.cetak.rekapitulasi');
     });
 
-    Route::prefix('daftar-bimbingan')->middleware('can:read-daftar-bimbingan')->group( function(){
+    Route::prefix('daftar-bimbingan')->middleware('can:read-daftar-bimbingan')->group(function () {
         Route::get('', [DaftarBimbinganController::class, 'index'])->name('apps.daftar-bimbingan');
         Route::get('{bimbingUji}/show', [DaftarBimbinganController::class, 'show'])->name('apps.daftar-bimbingan.show');
     });
 
-    Route::prefix('jenis-dokumen')->middleware('can:read-jenis-dokumen')->group( function() {
-        Route::get('',[JenisDokumenController::class,'index'])->name('apps.jenis-dokumen');
+    Route::prefix('jenis-dokumen')->middleware('can:read-jenis-dokumen')->group(function () {
+        Route::get('', [JenisDokumenController::class, 'index'])->name('apps.jenis-dokumen');
         Route::post('store', [JenisDokumenController::class, 'store'])->name('apps.jenis-dokumen.store')->middleware('can:create-jenis-dokumen');
         Route::get('{jenisDokumen}/show', [JenisDokumenController::class, 'show'])->name('apps.jenis-dokumen.show');
         Route::post('{jenisDokumen}/update', [JenisDokumenController::class, 'update'])->name('apps.jenis-dokumen.update')->middleware('can:update-jenis-dokumen');
         Route::get('{jenisDokumen}/destroy', [JenisDokumenController::class, 'destroy'])->name('apps.jenis-dokumen.delete')->middleware('can:delete-jenis-dokumen');
     });
 
-    Route::prefix('jadwal-sidang')->middleware('can:read-daftar-sidang')->group( function() {
-       Route::get('{jenis?}',[JadwalSidangController::class,'index'])->name('apps.jadwal-sidang');
-       Route::get('{sidang}/detail',[JadwalSidangController::class,'show'])->name('apps.jadwal-sidang.detail');
-       Route::post('{sidang}/daftar-sidang',[JadwalSidangController::class,'register'])->name('apps.jadwal-sidang.register');
-       Route::post('{sidang}/unggah-berkas',[JadwalSidangController::class,'uploadfile'])->name('apps.jadwal-sidang.unggah-berkas');
-       Route::post('{jadwalSidang}/update',[JadwalSidangController::class,'update'])->name('apps.jadwal-sidang.update');
-       Route::get('{jadwalSidang}/edit',[JadwalSidangController::class,'edit'])->name('apps.jadwal-sidang.edit');
-       Route::post('{jadwalSidang}/validasi-berkas',[JadwalSidangController::class,'validasiBerkas'])->name('apps.jadwal-sidang.validasi-berkas');
-       Route::post('{sidang}/nilai', [JadwalSidangController::class, 'nilai'])->name('apps.jadwal-sidang.nilai');
-       Route::post('{sidang}/revisi', [JadwalSidangController::class, 'revisi'])->name('apps.jadwal-sidang.revisi');
-       Route::post('{sidang}/update-status', [JadwalSidangController::class, 'updateStatus'])->name('apps.jadwal-sidang.update-status');
-       Route::get('{sidang}/revisi', [JadwalSidangController::class, 'cetakRevisi'])->name('apps.jadwal-sidang.revisi');
-       Route::get('{sidang}/nilai', [JadwalSidangController::class, 'cetakNilai'])->name('apps.jadwal-sidang.nilai');
-       Route::get('{sidang}/rekapitulasi', [JadwalSidangController::class, 'cetakRekap'])->name('apps.jadwal-sidang.rekapitulasi');
-       Route::get('{revisi}/revision-valid', [JadwalSidangController::class, 'revisionValid'])->name('apps.jadwal-sidang.revision-valid');
-       Route::get('{revisi}/mentor-validation', [JadwalSidangController::class, 'mentorValidation'])->name('apps.jadwal-sidang.mentor-validation');
-       Route::get('{sidang}/show-data',[JadwalSidangController::class,'showData'])->name('apps.jadwal-sidang.show-data');
+    Route::prefix('jadwal-sidang')->middleware('can:read-daftar-sidang')->group(function () {
+        Route::post('generate-auto', [JadwalSidangController::class, 'generateAuto'])->name('apps.jadwal-sidang.generate-auto')->middleware('can:generate-jadwal-sidang');
+        Route::post('publish-auto', [JadwalSidangController::class, 'publishAuto'])->name('apps.jadwal-sidang.publish-auto')->middleware('can:publish-jadwal-sidang');
+        Route::post('reset-auto', [JadwalSidangController::class, 'resetAuto'])->name('apps.jadwal-sidang.reset-auto')->middleware('can:reset-jadwal-sidang');
+        Route::get('{jenis?}', [JadwalSidangController::class, 'index'])->name('apps.jadwal-sidang');
+        Route::get('{sidang}/detail', [JadwalSidangController::class, 'show'])->name('apps.jadwal-sidang.detail');
+        Route::post('{sidang}/daftar-sidang', [JadwalSidangController::class, 'register'])->name('apps.jadwal-sidang.register');
+        Route::post('{sidang}/unggah-berkas', [JadwalSidangController::class, 'uploadfile'])->name('apps.jadwal-sidang.unggah-berkas');
+        Route::post('{jadwalSidang}/update', [JadwalSidangController::class, 'update'])->name('apps.jadwal-sidang.update');
+        Route::get('{jadwalSidang}/edit', [JadwalSidangController::class, 'edit'])->name('apps.jadwal-sidang.edit');
+        Route::post('{jadwalSidang}/validasi-berkas', [JadwalSidangController::class, 'validasiBerkas'])->name('apps.jadwal-sidang.validasi-berkas');
+        Route::post('{sidang}/nilai', [JadwalSidangController::class, 'nilai'])->name('apps.jadwal-sidang.nilai');
+        Route::post('{sidang}/revisi', [JadwalSidangController::class, 'revisi'])->name('apps.jadwal-sidang.revisi');
+        Route::post('{sidang}/update-status', [JadwalSidangController::class, 'updateStatus'])->name('apps.jadwal-sidang.update-status');
+        Route::get('{sidang}/revisi', [JadwalSidangController::class, 'cetakRevisi'])->name('apps.jadwal-sidang.revisi');
+        Route::get('{sidang}/nilai', [JadwalSidangController::class, 'cetakNilai'])->name('apps.jadwal-sidang.nilai');
+        Route::get('{sidang}/rekapitulasi', [JadwalSidangController::class, 'cetakRekap'])->name('apps.jadwal-sidang.rekapitulasi');
+        Route::get('{revisi}/revision-valid', [JadwalSidangController::class, 'revisionValid'])->name('apps.jadwal-sidang.revision-valid');
+        Route::get('{revisi}/mentor-validation', [JadwalSidangController::class, 'mentorValidation'])->name('apps.jadwal-sidang.mentor-validation');
+        Route::get('{sidang}/show-data', [JadwalSidangController::class, 'showData'])->name('apps.jadwal-sidang.show-data');
     });
-    Route::get('export-jadwal-sidang', [JadwalSidangController::class,'export'])->name('apps.jadwal-sidang.export');
+    Route::get('export-jadwal-sidang', [JadwalSidangController::class, 'export'])->name('apps.jadwal-sidang.export');
 
-    Route::prefix('profile-dosen')->group( function() {
-       Route::get('',[ProfileDosenController::class,'index'])->name('apps.profile-dosen');
+    Route::prefix('profile-dosen')->group(function () {
+        Route::get('', [ProfileDosenController::class, 'index'])->name('apps.profile-dosen');
     });
 
-    Route::prefix('archives')->group( function() {
-       Route::get('',[ArchiveController::class,'index'])->name('apps.archives');
-       Route::get('{tugasAkhir}/show', [ArchiveController::class, 'show'])->name('apps.archives.show');
+    Route::prefix('archives')->group(function () {
+        Route::get('', [ArchiveController::class, 'index'])->name('apps.archives');
+        Route::get('{tugasAkhir}/show', [ArchiveController::class, 'show'])->name('apps.archives.show');
     });
 
     Route::get('guide', [PanduanController::class, 'index'])->name('apps.guide');
 
-    Route::get('coming-soon', function(){
+    Route::get('coming-soon', function () {
         return view('errors.coming-soon');
     })->name('apps.coming-soon');
 });

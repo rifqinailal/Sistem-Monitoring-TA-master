@@ -150,6 +150,14 @@ class PermissionSeeder extends Seeder
             ["name" => 'create-halangan-tanggal', 'display_name' => 'Buat Halangan Tanggal'],
             ["name" => 'update-halangan-tanggal', 'display_name' => 'Ubah Halangan Tanggal'],
             ["name" => 'delete-halangan-tanggal', 'display_name' => 'Hapus Halangan Tanggal'],
+
+            ["name" => "generate-jadwal-seminar", "display_name" => "Generate Jadwal Seminar Otomatis"],
+            ["name" => "publish-jadwal-seminar", "display_name" => "Terbitkan Jadwal Seminar"],
+            ["name" => "reset-jadwal-seminar", "display_name" => "Reset Draft Jadwal Seminar"],
+
+            ["name" => "generate-jadwal-sidang", "display_name" => "Generate Jadwal Sidang Otomatis"],
+            ["name" => "publish-jadwal-sidang", "display_name" => "Terbitkan Jadwal Sidang"],
+            ["name" => "reset-jadwal-sidang", "display_name" => "Reset Draft Jadwal Sidang"],
         ]);
         $this->insertPermission($permissions);
     }

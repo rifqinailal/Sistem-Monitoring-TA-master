@@ -71,6 +71,8 @@ class RoleSeeder extends Seeder
             'read-daftar-sidang','create-daftar-sidang','update-daftar-sidang','delete-daftar-sidang',
             'read-halangan-rutin', 'create-halangan-rutin', 'update-halangan-rutin', 'delete-halangan-rutin',
             'read-halangan-tanggal', 'create-halangan-tanggal', 'update-halangan-tanggal', 'delete-halangan-tanggal',
+            'generate-jadwal-seminar', 'publish-jadwal-seminar', 'reset-jadwal-seminar',
+            'generate-jadwal-sidang', 'publish-jadwal-sidang', 'reset-jadwal-sidang', 
         ]);
 
         $kaprodi->givePermissionTo([
