@@ -317,9 +317,12 @@ Route::prefix('apps')->middleware('auth')->group(function () {
     });
 
     Route::prefix('jadwal-sidang')->middleware('can:read-daftar-sidang')->group(function () {
+        Route::get('generate-auto', [JadwalSidangController::class, 'createAuto'])->name('apps.jadwal-sidang.create-auto')->middleware('can:generate-jadwal-sidang');
         Route::post('generate-auto', [JadwalSidangController::class, 'generateAuto'])->name('apps.jadwal-sidang.generate-auto')->middleware('can:generate-jadwal-sidang');
         Route::post('publish-auto', [JadwalSidangController::class, 'publishAuto'])->name('apps.jadwal-sidang.publish-auto')->middleware('can:publish-jadwal-sidang');
         Route::post('reset-auto', [JadwalSidangController::class, 'resetAuto'])->name('apps.jadwal-sidang.reset-auto')->middleware('can:reset-jadwal-sidang');
+        Route::post('{sidang}/publish-single', [JadwalSidangController::class, 'publishSingle'])->name('apps.jadwal-sidang.publish-single');
+        Route::get('{jadwalSidang}/reset', [JadwalSidangController::class, 'reset'])->name('apps.jadwal-sidang.reset');
         Route::get('{jenis?}', [JadwalSidangController::class, 'index'])->name('apps.jadwal-sidang');
         Route::get('{sidang}/detail', [JadwalSidangController::class, 'show'])->name('apps.jadwal-sidang.detail');
         Route::post('{sidang}/daftar-sidang', [JadwalSidangController::class, 'register'])->name('apps.jadwal-sidang.register');

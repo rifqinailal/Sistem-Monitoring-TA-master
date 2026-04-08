@@ -565,26 +565,7 @@ class JadwalSeminarController extends Controller
         }
     }
 
-    public function publishAuto(Request $request)
-    {
-        try {
 
-            $publishedCount = JadwalSeminar::where('status', 'draft')->update([
-                'status' => 'sudah_terjadwal',
-                'keterangan' => 'Jadwal diterbitkan otomatis'
-            ]);
-
-            if ($publishedCount == 0) {
-                return redirect()->back()->with(['error' => 'Tidak ada jadwal berstatus Draft yang bisa diterbitkan.']);
-            }
-
-
-            return redirect()->route('apps.jadwal-seminar', ['status' => 'sudah_terjadwal'])
-                ->with(['success' => "Berhasil menerbitkan $publishedCount jadwal seminar."]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat publish: ' . $e->getMessage()]);
-        }
-    }
 
     public function resetAuto(Request $request)
     {
@@ -613,7 +594,7 @@ class JadwalSeminarController extends Controller
 
     public function createAuto(Request $request)
     {
-        
+
         $data = JadwalSeminar::with(['tugas_akhir.mahasiswa', 'tugas_akhir.bimbing_uji.dosen'])
             ->whereIn('status', ['belum_terjadwal', 'draft', 'bentrok'])
             ->get();
@@ -640,13 +621,62 @@ class JadwalSeminarController extends Controller
 
         return view('administrator.jadwal-seminar.generate', $viewData);
     }
+    public function publishAuto(Request $request)
+    {
+        try {
+            // Ambil semua jadwal yang berstatus draft beserta relasinya
+            $drafts = JadwalSeminar::with('tugas_akhir.bimbing_uji')->where('status', 'draft')->get();
+            $publishedCount = 0;
+
+            foreach ($drafts as $draft) {
+                // 1. Update status jadwal ke sudah_terjadwal
+                $draft->update([
+                    'status' => 'sudah_terjadwal',
+                    'keterangan' => 'Jadwal diterbitkan otomatis'
+                ]);
+
+                // 2. Samakan dengan fitur Edit Manual bawaan: Reset status_seminar dan hapus penilaian lama
+                if ($draft->tugas_akhir) {
+                    $draft->tugas_akhir->update(['status_seminar' => null]);
+
+                    $rating = Penilaian::whereIn('bimbing_uji_id', $draft->tugas_akhir->bimbing_uji->pluck('id'));
+                    if ($rating->count() > 0) {
+                        $rating->delete();
+                    }
+                }
+
+                $publishedCount++;
+            }
+
+            if ($publishedCount == 0) {
+                return redirect()->back()->with(['error' => 'Tidak ada jadwal berstatus Draft yang bisa diterbitkan.']);
+            }
+
+            return redirect()->route('apps.jadwal-seminar', ['status' => 'sudah_terjadwal'])
+                ->with(['success' => "Berhasil menerbitkan $publishedCount jadwal seminar."]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat publish: ' . $e->getMessage()]);
+        }
+    }
+
     public function publishSingle(Request $request, JadwalSeminar $jadwalSeminar)
     {
         try {
+            // 1. Update status jadwal ke sudah_terjadwal
             $jadwalSeminar->update([
                 'status' => 'sudah_terjadwal',
                 'keterangan' => 'Jadwal diterbitkan manual oleh Admin'
             ]);
+
+            // 2. Samakan dengan fitur Edit Manual bawaan
+            if ($jadwalSeminar->tugas_akhir) {
+                $jadwalSeminar->tugas_akhir->update(['status_seminar' => null]);
+
+                $rating = Penilaian::whereIn('bimbing_uji_id', $jadwalSeminar->tugas_akhir->bimbing_uji->pluck('id'));
+                if ($rating->count() > 0) {
+                    $rating->delete();
+                }
+            }
 
             return redirect()->back()->with(['success' => 'Berhasil menerbitkan jadwal seminar atas nama mahasiswa terkait.']);
         } catch (\Exception $e) {

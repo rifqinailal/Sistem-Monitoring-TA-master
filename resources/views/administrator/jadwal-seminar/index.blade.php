@@ -209,10 +209,10 @@
                             @endif
                             <th width="20%">Dosen</th>
                             <th>Ruangan</th>
-                            @if (request('status') == 'draft')
+                           @if (request('status') == 'draft')
                                 <th>Status Generate</th>
                             @endif
-                            @if (getInfoLogin()->hasRole('Admin'))
+                            @if (getInfoLogin()->hasRole('Admin') && request('status') != 'draft')
                                 <th>Status</th>
                             @endif
                             <th>Aksi</th>
@@ -454,7 +454,7 @@
                                     </td>
                                 @endif
 
-                                {{-- <td class="mb-3 text-center"></td> --}}
+                                {{-- <td class="mb-3 text-center"></td>
                                 @if (getInfoLogin()->hasRole('Admin'))
                                     <td class="text-align-center justify-content-center">
                                         <p style="white-space: nowrap"
@@ -467,7 +467,7 @@
                                             </p>
                                         @endif
                                     </td>
-                                @endif
+                                @endif --}}
                                 <td class="mb-3 text-center">
                                     @if ($item->status == 'draft' || $item->status == 'bentrok')
                                         @can('update-jadwal-seminar')

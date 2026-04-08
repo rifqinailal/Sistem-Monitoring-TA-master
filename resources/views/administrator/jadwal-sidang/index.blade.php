@@ -57,6 +57,13 @@
                                 href="{{ route('apps.jadwal-sidang.export', ['data' => 'sk_sidang']) }}">SK Sidang</a>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        @can('generate-jadwal-sidang')
+                            <a href="{{ route('apps.jadwal-sidang.create-auto') }}" class="btn btn-warning">
+                                <i class="bx bx-cog bx-spin-hover"></i> Generate Jadwal Sidang
+                            </a>
+                        @endcan
+                    </div>
                 @endif
             </div>
             <hr>
@@ -89,14 +96,13 @@
                         </a>
                     </li>
                 </ul>
-                <div class="mb-3 d-flex gap-2 flex-column justify-content-end flex-md-row" >
+                <div class="mb-3 d-flex gap-2 flex-column justify-content-end flex-md-row">
                     <form action="">
                         <select name="filter1" class="form-control" onchange="this.form.submit()">
                             <option value="semua" {{ $filter1 == 'semua' ? 'selected' : '' }}>Semua Program
                                 Studi</option>
                             @foreach ($programStudies as $item)
-                                <option
-                                    value="{{ $item->id }}"{{ $filter1 == $item->id ? 'selected' : '' }}>
+                                <option value="{{ $item->id }}"{{ $filter1 == $item->id ? 'selected' : '' }}>
                                     {{ $item->display }}</option>
                             @endforeach
                         </select>
@@ -181,11 +187,19 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @if (url()->full() == route('apps.jadwal-sidang',['status' => 'sudah_daftar']) ||
+                            <a class="nav-link @if (url()->full() == route('apps.jadwal-sidang', ['status' => 'sudah_daftar']) ||
                                     (\Request::is('apps/jadwal-sidang') && \Request::has('tanggal') && !\Request::has('status') == 'sudah_daftar')) ) active @endif"
-                                href="{{ route('apps.jadwal-sidang',['status' => 'sudah_daftar']) }}">
+                                href="{{ route('apps.jadwal-sidang', ['status' => 'sudah_daftar']) }}">
                                 <span class="d-block d-sm-none"><i class="bx bx-timer"></i></span>
                                 <span class="d-none d-sm-block">Belum Terjadwal</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @if (request('status') == 'draft') active @endif"
+                                href="{{ route('apps.jadwal-sidang', ['status' => 'draft']) }}">
+                                <span class="d-block d-sm-none"><i class="bx bx-list-ol"></i></span>
+                                <span class="d-none d-sm-block">Hasil Generate (Draft) <span
+                                        class="badge bg-danger rounded-pill">{{ \App\Models\Sidang::whereIn('status', ['draft', 'bentrok'])->count() ?: '' }}</span></span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -218,6 +232,30 @@
                 @endcan
             @endif
 
+            @if (request('status') == 'draft')
+                <div class="alert alert-info mt-3">
+                    <strong>Informasi:</strong> Jadwal di bawah ini masih berupa <b>Draf</b> dan belum bisa dilihat oleh
+                    mahasiswa/dosen. Silakan periksa hasilnya. Jika sudah sesuai, klik "Terbitkan". Jika masih banyak yang
+                    bentrok, Anda bisa mengeditnya manual atau me-resetnya.
+                </div>
+                <div class="d-flex justify-content-end gap-2 mb-3 mt-3">
+                    <form action="{{ route('apps.jadwal-sidang.reset-auto') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Yakin ingin mereset/membatalkan semua hasil generate ini?')">
+                            <i class="bx bx-reset"></i> Batalkan & Reset
+                        </button>
+                    </form>
+                    <form action="{{ route('apps.jadwal-sidang.publish-auto') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-success"
+                            onclick="return confirm('Yakin ingin menerbitkan jadwal yang berstatus AMAN? (Jadwal bentrok tidak akan diterbitkan)')">
+                            <i class="bx bx-check-double"></i> Terbitkan Jadwal
+                        </button>
+                    </form>
+                </div>
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-striped" id="datatable">
                     <thead>
@@ -231,7 +269,10 @@
                                 <th width="20%">Dosen</th>
                             @endif
                             <th>Ruangan</th>
-                            @if (getInfoLogin()->hasRole('Admin') || getInfoLogin()->hasRole('Dosen'))
+                            @if (request('status') == 'draft')
+                                <th>Status Generate</th>
+                            @endif
+                            @if ((getInfoLogin()->hasRole('Admin') || getInfoLogin()->hasRole('Dosen')) && request('status') != 'draft')
                                 <th>Status</th>
                             @endif
                             <th>Aksi</th>
@@ -363,28 +404,47 @@
                                             @php
                                                 $ratingRecap = 0;
 
-                                                $penguji = $item->tugas_akhir->bimbing_uji()->whereIn('jenis', ['pengganti', 'penguji'])->orderBy('urut', 'asc')->get();
+                                                $penguji = $item->tugas_akhir
+                                                    ->bimbing_uji()
+                                                    ->whereIn('jenis', ['pengganti', 'penguji'])
+                                                    ->orderBy('urut', 'asc')
+                                                    ->get();
                                                 $prioritasBimbing = collect();
-                                                $penguji->groupBy('urut')->each(function ($group) use ($prioritasBimbing) {
-                                                    $prioritasBimbing->push($group->where('jenis', 'pengganti')->first() ?? $group->where('jenis', 'penguji')->first());
-                                                });
-                                                $revisions = $prioritasBimbing->flatMap(fn($bimbing) => $bimbing->revisi->where('type', 'Sidang'));
-                                                $allMentorValidated = $revisions->isNotEmpty() && $revisions->every(fn($revisi) => $revisi->is_mentor_validation);
+                                                $penguji
+                                                    ->groupBy('urut')
+                                                    ->each(function ($group) use ($prioritasBimbing) {
+                                                        $prioritasBimbing->push(
+                                                            $group->where('jenis', 'pengganti')->first() ??
+                                                                $group->where('jenis', 'penguji')->first(),
+                                                        );
+                                                    });
+                                                $revisions = $prioritasBimbing->flatMap(
+                                                    fn($bimbing) => $bimbing->revisi->where('type', 'Sidang'),
+                                                );
+                                                $allMentorValidated =
+                                                    $revisions->isNotEmpty() &&
+                                                    $revisions->every(fn($revisi) => $revisi->is_mentor_validation);
                                             @endphp
                                             <p class="fw-bold small m-0">Pembimbing
                                                 @if (getInfoLogin()->hasRole('Admin'))
-                                                    @if (isset($revisions) && $revisions->isNotEmpty())  <i class="bx {{ $allMentorValidated ? 'bx-check-circle text-success' : 'bx-time' }}"></i> @endif
+                                                    @if (isset($revisions) && $revisions->isNotEmpty())
+                                                        <i
+                                                            class="bx {{ $allMentorValidated ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                    @endif
                                                 @endif
-                                                </p>
+                                            </p>
                                             <ol>
                                                 @for ($i = 0; $i < 2; $i++)
                                                     @if ($item->tugas_akhir->bimbing_uji()->where('jenis', 'pembimbing')->where('urut', $i + 1)->count() > 0)
                                                         @foreach ($item->tugas_akhir->bimbing_uji()->where('jenis', 'pembimbing')->get() as $pemb)
                                                             @if ($pemb->jenis == 'pembimbing' && $pemb->urut == 1 && $i == 0)
-                                                            @php $ratingRecap += ($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3; @endphp
-                                                            <li class="small"> <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
-                                                                <span class="text-muted">Nilai : <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                        <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
+                                                                @php $ratingRecap += ($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3; @endphp
+                                                                <li class="small">
+                                                                    <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
+                                                                    <span class="text-muted">Nilai :
+                                                                        <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
                                                                     </span>
                                                                 </li>
                                                             @endif
@@ -392,8 +452,10 @@
                                                                 @php $ratingRecap += ($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3; @endphp
                                                                 <li class="small">
                                                                     <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
-                                                                    <span class="text-muted">Nilai : <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                        <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
+                                                                    <span class="text-muted">Nilai :
+                                                                        <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.3, 2, '.', ',') }})</span>
                                                                     </span>
                                                                 </li>
                                                             @endif
@@ -412,17 +474,22 @@
                                                                 @php $ratingRecap += ($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
                                                                 <li class="small mb-2">
                                                                     <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
-                                                                    <span class="text-muted">Nilai : <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                        <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                    <span class="text-muted">Nilai :
+                                                                        <strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
                                                                         @if (getInfoLogin()->hasRole('Admin'))
-                                                                        @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
-                                                                            @php
-                                                                                $penguji1 = $pemb->revisi->where('type', 'Sidang')->first();
-                                                                            @endphp
-                                                                            @if ($penguji1)
-                                                                                <i class="bx {{ $penguji1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                            @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
+                                                                                @php
+                                                                                    $penguji1 = $pemb->revisi
+                                                                                        ->where('type', 'Sidang')
+                                                                                        ->first();
+                                                                                @endphp
+                                                                                @if ($penguji1)
+                                                                                    <i
+                                                                                        class="bx {{ $penguji1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                                @endif
                                                                             @endif
-                                                                        @endif
                                                                         @endif
 
                                                                     </span>
@@ -432,17 +499,22 @@
                                                                 @php $ratingRecap += ($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
                                                                 <li class="small">
                                                                     <p class="mb-0">{{ $pemb->dosen->name ?? '-' }}</p>
-                                                                    <span class="text-muted">Nilai :<strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                        <span style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                    <span class="text-muted">Nilai
+                                                                        :<strong>{{ number_format($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($pemb->penilaian()->where('type', 'Sidang')->count() > 0 ? $pemb->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
                                                                         @if (getInfoLogin()->hasRole('Admin'))
-                                                                        @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
-                                                                            @php
-                                                                                $penguji2 = $pemb->revisi->where('type', 'Sidang')->first();
-                                                                            @endphp
-                                                                            @if ($penguji2)
-                                                                                <i class="bx {{ $penguji2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                            @if (isset($pemb->revisi) && $pemb->revisi->isNotEmpty())
+                                                                                @php
+                                                                                    $penguji2 = $pemb->revisi
+                                                                                        ->where('type', 'Sidang')
+                                                                                        ->first();
+                                                                                @endphp
+                                                                                @if ($penguji2)
+                                                                                    <i
+                                                                                        class="bx {{ $penguji2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                                @endif
                                                                             @endif
-                                                                        @endif
                                                                         @endif
                                                                     </span>
                                                                 </li>
@@ -459,42 +531,52 @@
                                                     @if ($item->tugas_akhir->bimbing_uji()->where('jenis', 'pengganti')->where('urut', $i + 1)->count() > 0)
                                                         @foreach ($item->tugas_akhir->bimbing_uji()->where('jenis', 'pengganti')->get() as $peng)
                                                             @if ($peng->jenis == 'pengganti' && $peng->urut == 1 && $i == 0)
-                                                            @php $ratingRecap += ($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
-                                                            <li class="small mb-2">
-                                                                <p class="mb-0">{{ $peng->dosen->name ?? '-' }}</p>
-                                                                <span class="text-muted">Nilai : <strong>{{ number_format($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                    <span style="font-size: 9px;">({{ number_format(($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
-                                                                    @if (getInfoLogin()->hasRole('Admin'))
-                                                                    @if (isset($peng->revisi) && $peng->revisi->isNotEmpty())
-                                                                        @php
-                                                                            $pengganti1 = $peng->revisi->where('type', 'Sidang')->first();
-                                                                        @endphp
-                                                                        @if ($pengganti1)
-                                                                            <i class="bx {{ $pengganti1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                @php $ratingRecap += ($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
+                                                                <li class="small mb-2">
+                                                                    <p class="mb-0">{{ $peng->dosen->name ?? '-' }}</p>
+                                                                    <span class="text-muted">Nilai :
+                                                                        <strong>{{ number_format($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                        @if (getInfoLogin()->hasRole('Admin'))
+                                                                            @if (isset($peng->revisi) && $peng->revisi->isNotEmpty())
+                                                                                @php
+                                                                                    $pengganti1 = $peng->revisi
+                                                                                        ->where('type', 'Sidang')
+                                                                                        ->first();
+                                                                                @endphp
+                                                                                @if ($pengganti1)
+                                                                                    <i
+                                                                                        class="bx {{ $pengganti1->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                                @endif
+                                                                            @endif
                                                                         @endif
-                                                                    @endif
-                                                                    @endif
-                                                                </span>
-                                                            </li>
+                                                                    </span>
+                                                                </li>
                                                             @endif
                                                             @if ($peng->jenis == 'pengganti' && $peng->urut == 2 && $i == 1)
-                                                            @php $ratingRecap += ($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
-                                                            <li class="small mb-2">
-                                                                <p class="mb-0">{{ $peng->dosen->name ?? '-' }}</p>
-                                                                <span class="text-muted">Nilai : <strong>{{ number_format($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
-                                                                    <span style="font-size: 9px;">({{ number_format(($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
-                                                                    @if (getInfoLogin()->hasRole('Admin'))
-                                                                    @if (isset($peng->revisi) && $peng->revisi->isNotEmpty())
-                                                                        @php
-                                                                            $pengganti2 = $peng->revisi->where('type', 'Sidang')->first();
-                                                                        @endphp
-                                                                        @if ($pengganti2)
-                                                                            <i class="bx {{ $pengganti2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                @php $ratingRecap += ($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2; @endphp
+                                                                <li class="small mb-2">
+                                                                    <p class="mb-0">{{ $peng->dosen->name ?? '-' }}</p>
+                                                                    <span class="text-muted">Nilai :
+                                                                        <strong>{{ number_format($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0, 2, '.', ',') }}</strong>
+                                                                        <span
+                                                                            style="font-size: 9px;">({{ number_format(($peng->penilaian()->where('type', 'Sidang')->count() > 0 ? $peng->penilaian()->where('type', 'Sidang')->avg('nilai') : 0) * 0.2, 2, '.', ',') }})</span>
+                                                                        @if (getInfoLogin()->hasRole('Admin'))
+                                                                            @if (isset($peng->revisi) && $peng->revisi->isNotEmpty())
+                                                                                @php
+                                                                                    $pengganti2 = $peng->revisi
+                                                                                        ->where('type', 'Sidang')
+                                                                                        ->first();
+                                                                                @endphp
+                                                                                @if ($pengganti2)
+                                                                                    <i
+                                                                                        class="bx {{ $pengganti2->is_valid ? 'bx-check-circle text-success' : 'bx-time' }}"></i>
+                                                                                @endif
+                                                                            @endif
                                                                         @endif
-                                                                    @endif
-                                                                    @endif
-                                                                </span>
-                                                            </li>
+                                                                    </span>
+                                                                </li>
                                                             @endif
                                                         @endforeach
                                                     @else
@@ -502,7 +584,8 @@
                                                     @endif
                                                 @endfor
                                             </ol>
-                                            <p class="fw-bold small m-0">Rekapitulasi Nilai : {{ number_format($ratingRecap, 2, '.', ',') }}</p>
+                                            <p class="fw-bold small m-0">Rekapitulasi Nilai :
+                                                {{ number_format($ratingRecap, 2, '.', ',') }}</p>
                                         </td>
                                     @endif
                                     <td>
@@ -528,33 +611,78 @@
                                             </p>
                                         @endif
                                     </td>
-                                    @if (getInfoLogin()->hasRole('Dosen'))
+
+                                    @if (request('status') == 'draft')
+                                        <td>
+                                            @if ($item->status == 'bentrok')
+                                                <span class="badge bg-danger mb-1"><i class="bx bx-error-circle"></i>
+                                                    Bentrok</span>
+                                                <p class="text-danger small m-0 fw-bold">
+                                                    {{ $item->keterangan ?? 'Jadwal tidak ditemukan karena padat.' }}</p>
+                                            @else
+                                                <span class="badge bg-success mb-1"><i class="bx bx-check-circle"></i>
+                                                    Aman (Draft)</span>
+                                                <p class="text-success small m-0">Siap diterbitkan.</p>
+                                            @endif
+                                        </td>
+                                    @endif
+                                    @if (getInfoLogin()->hasRole('Dosen') && request('status') != 'draft')
                                         <td>
                                             <span
                                                 class="badge small mb-1 {{ !is_null($item->tugas_akhir->status_sidang) ? ($item->tugas_akhir->status_sidang == 'acc' ? 'badge-soft-success' : ($item->tugas_akhir->status_sidang == 'revisi' ? 'badge-soft-success' : 'badge-soft-danger')) : 'badge-soft-secondary' }}">{{ !is_null($item->tugas_akhir->status_sidang) ? ($item->tugas_akhir->status_sidang == 'acc' ? 'Disetujui' : ($item->tugas_akhir->status_sidang == 'revisi' ? 'Disetujui dengan revisi' : 'Sidang Ulang')) : '-' }}</span>
                                         </td>
                                     @endif
-                                    @if (getInfoLogin()->hasRole('Admin'))
+                                    @if (getInfoLogin()->hasRole('Admin') && request('status') != 'draft')
                                         <td class="text-align-center justify-content-center">
                                             <p style="white-space: nowrap"
-
                                                 class="font-size-12 small {{ $item->tugas_akhir->status_pemberkasan_sidang == 'sudah_lengkap' ? 'badge badge-soft-success text-success' : 'badge badge-soft-danger text-danger' }}">
                                                 {{ $item->tugas_akhir->status_pemberkasan_sidang == 'sudah_lengkap' ? 'Berkas sudah lengkap' : 'Berkas belum lengkap' }}
                                             </p>
                                         </td>
                                     @endif
                                     <td class="mb-3 text-center">
-                                        @if (getInfoLogin()->hasRole('Dosen'))
-                                            <a href="{{ route('apps.jadwal-sidang.detail', $item->tugas_akhir->sidang->id) }}" class="btn btn-sm btn-outline-primary my-1" title="Detail Sidang"><i class="bx bx-clipboard"></i></a>
-                                            @if ($item->tugas_akhir->bimbing_uji()->where('dosen_id', getInfoLogin()->userable_id)->where('jenis', 'pembimbing')->where('urut', 1)->count() > 0 &&
-                                                    $item->tugas_akhir->sidang->status == 'sudah_sidang' &&
-                                                    $item->tugas_akhir->status_sidang != 'acc' &&
-                                                    $item->tugas_akhir->status_sidang != 'revisi' &&
-                                                    $item->tugas_akhir->status_sidang != 'retrial')
-                                                <button class="btn btn-outline-warning btn-sm mb-1" type="button" data-bs-toggle="modal" data-bs-target="#myModal{{ $item->id }}">Setujui?</button>
-                                                @include('administrator.jadwal-sidang.partials.modal')
+                                        @if ($item->status == 'draft' || $item->status == 'bentrok')
+                                            @can('update-jadwal-sidang')
+                                                <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}"
+                                                    class="btn btn-sm btn-primary mb-2" title="Edit Manual">
+                                                    <i class="bx bx-pencil"></i>
+                                                </a>
+                                            @endcan
+                                            <a href="javascript:void(0)"
+                                                onclick="reset('{{ $item->id }}', '{{ route('apps.jadwal-sidang.reset', ['jadwalSidang' => $item->id]) }}')"
+                                                class="btn btn-sm btn-danger mb-2"
+                                                title="Batal & Kembalikan ke Belum Terjadwal">
+                                                <i class="bx bx-reset"></i>
+                                            </a>
+                                            @if ($item->status == 'draft')
+                                                <form
+                                                    action="{{ route('apps.jadwal-sidang.publish-single', $item->id) }}"
+                                                    method="POST" style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success mb-2"
+                                                        title="Terbitkan 1 Jadwal Ini"
+                                                        onclick="return confirm('Terbitkan jadwal ini agar bisa dilihat mahasiswa?')">
+                                                        <i class="bx bx-check-double"></i>
+                                                    </button>
+                                                </form>
                                             @endif
-                                        @endif
+                                        @else
+                                            @if (getInfoLogin()->hasRole('Dosen'))
+                                                <a href="{{ route('apps.jadwal-sidang.detail', $item->tugas_akhir->sidang->id) }}"
+                                                    class="btn btn-sm btn-outline-primary my-1" title="Detail Sidang"><i
+                                                        class="bx bx-clipboard"></i></a>
+                                                @if (
+                                                    $item->tugas_akhir->bimbing_uji()->where('dosen_id', getInfoLogin()->userable_id)->where('jenis', 'pembimbing')->where('urut', 1)->count() > 0 &&
+                                                        $item->tugas_akhir->sidang->status == 'sudah_sidang' &&
+                                                        $item->tugas_akhir->status_sidang != 'acc' &&
+                                                        $item->tugas_akhir->status_sidang != 'revisi' &&
+                                                        $item->tugas_akhir->status_sidang != 'retrial')
+                                                    <button class="btn btn-outline-warning btn-sm mb-1" type="button"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#myModal{{ $item->id }}">Setujui?</button>
+                                                    @include('administrator.jadwal-sidang.partials.modal')
+                                                @endif
+                                            @endif
 
                                             {{-- @if (getInfoLogin()->hasRole('Mahasiswa'))
                                                 @if ($item->status == 'sudah_sidang')
@@ -570,32 +698,39 @@
                                                     @endif
                                                 @endif
                                             @endif --}}
-                                        @if (getInfoLogin()->hasRole('Mahasiswa'))
-                                            @if ($item->status == 'sudah_sidang')
-                                                <a href="{{ route('apps.jadwal-sidang.detail', $item->id) }}" class="btn btn-sm btn-outline-primary my-1" title="Detail Sidang">
-                                                    <i class="bx bx-show"></i>
-                                                </a>
-                                            @endif
+                                            @if (getInfoLogin()->hasRole('Mahasiswa'))
+                                                @if ($item->status == 'sudah_sidang')
+                                                    <a href="{{ route('apps.jadwal-sidang.detail', $item->id) }}"
+                                                        class="btn btn-sm btn-outline-primary my-1" title="Detail Sidang">
+                                                        <i class="bx bx-show"></i>
+                                                    </a>
+                                                @endif
 
-                                            @if (in_array($item->status, ['belum_daftar', 'sudah_daftar']))
-                                                @if ($item->tugas_akhir->status_pemberkasan == 'sudah_lengkap')
-                                                    <button onclick="daftarSidang('{{ $item->id }}', '{{ route('apps.jadwal-sidang.register', $item->id) }}')" class="btn btn-sm btn-outline-dark my-1">
-                                                        <i class="bx bx-file"></i> Daftar
-                                                    </button>
-                                                @else
-                                                    <p style="white-space: nowrap" class="font-size-12 small badge badge-soft-danger text-dark">Belum pemberkasan sempro</p>
+                                                @if (in_array($item->status, ['belum_daftar', 'sudah_daftar']))
+                                                    @if ($item->tugas_akhir->status_pemberkasan == 'sudah_lengkap')
+                                                        <button
+                                                            onclick="daftarSidang('{{ $item->id }}', '{{ route('apps.jadwal-sidang.register', $item->id) }}')"
+                                                            class="btn btn-sm btn-outline-dark my-1">
+                                                            <i class="bx bx-file"></i> Daftar
+                                                        </button>
+                                                    @else
+                                                        <p style="white-space: nowrap"
+                                                            class="font-size-12 small badge badge-soft-danger text-dark">
+                                                            Belum pemberkasan sempro</p>
+                                                    @endif
+                                                @endif
+
+                                                @if ($item->status == 'sudah_sidang')
+                                                    <a href="javascript:void(0);"
+                                                        onclick="unggahFile('{{ $item->id }}', '{{ route('apps.jadwal-sidang.unggah-berkas', $item->id) }}')"
+                                                        class="btn btn-sm btn-outline-dark my-1">
+                                                        <i class="bx bx-file"></i> Unggah
+                                                    </a>
                                                 @endif
                                             @endif
 
-                                            @if ($item->status == 'sudah_sidang')
-                                                <a href="javascript:void(0);" onclick="unggahFile('{{ $item->id }}', '{{ route('apps.jadwal-sidang.unggah-berkas', $item->id) }}')" class="btn btn-sm btn-outline-dark my-1">
-                                                    <i class="bx bx-file"></i> Unggah
-                                                </a>
-                                            @endif
-                                        @endif
 
-
-                                        {{-- @if (getInfoLogin()->hasRole('Admin'))
+                                            {{-- @if (getInfoLogin()->hasRole('Admin'))
                                             @if ($item->status == 'belum_daftar')
                                                 <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}" class="btn btn-sm btn-primary"><i class="bx bx-calendar-event"></i></a>
                                             @endif
@@ -613,36 +748,41 @@
                                             @endif
                                         @endif --}}
 
-                                        @if (getInfoLogin()->hasRole('Admin'))
-                                            {{-- Jika status belum_daftar, tampilkan tombol edit --}}
-                                            @if ($item->status == 'belum_daftar')
-                                                <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}" class="btn btn-sm btn-primary my-1" title="Atur Jadwal">
-                                                    <i class="bx bx-calendar-event"></i>
-                                                </a>
+                                            @if (getInfoLogin()->hasRole('Admin'))
+                                                {{-- Jika status belum_daftar, tampilkan tombol edit --}}
+                                                @if ($item->status == 'belum_daftar')
+                                                    <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}"
+                                                        class="btn btn-sm btn-primary my-1" title="Atur Jadwal">
+                                                        <i class="bx bx-calendar-event"></i>
+                                                    </a>
+                                                @endif
+                                                {{-- Jika status sudah_daftar atau sudah_terjadwal, tampilkan tombol edit --}}
+                                                @if (in_array($item->status, ['sudah_daftar', 'sudah_terjadwal']))
+                                                    <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}"
+                                                        class="btn btn-sm btn-primary my-1" title="Atur Jadwal">
+                                                        <i class="bx bx-calendar-event"></i>
+                                                    </a>
+                                                @endif
+                                                {{-- Jika status sudah_daftar atau status_pemberkasan_sidang belum lengkap dan status bukan belum_daftar --}}
+                                                @if (
+                                                    $item->status == 'sudah_daftar' ||
+                                                        ($item->tugas_akhir->status_pemberkasan_sidang == 'belum_lengkap' && $item->status !== 'belum_daftar'))
+                                                    <a href="javascript:void(0);"
+                                                        onclick="validasiFile('{{ $item->id }}', '{{ route('apps.jadwal-sidang.validasi-berkas', $item->id) }}')"
+                                                        class="btn btn-sm btn-outline-success my-1"
+                                                        title="Validasi Berkas">
+                                                        <i class="bx bx-pencil"></i>
+                                                    </a>
+                                                @endif
+                                                {{-- Jika status sudah_sidang tampilkan tombol detail --}}
+                                                @if ($item->status == 'sudah_sidang')
+                                                    <a href="{{ route('apps.jadwal-sidang.show-data', $item) }}"
+                                                        class="btn btn-sm btn-outline-warning my-1" title="Detail Sidang">
+                                                        <i class="bx bx-show"></i>
+                                                    </a>
+                                                @endif
                                             @endif
-                                            {{-- Jika status sudah_daftar atau sudah_terjadwal, tampilkan tombol edit --}}
-                                            @if (in_array($item->status, ['sudah_daftar', 'sudah_terjadwal']))
-                                                <a href="{{ route('apps.jadwal-sidang.edit', ['jadwalSidang' => $item->id]) }}" class="btn btn-sm btn-primary my-1" title="Atur Jadwal">
-                                                    <i class="bx bx-calendar-event"></i>
-                                                </a>
-                                            @endif
-                                            {{-- Jika status sudah_daftar atau status_pemberkasan_sidang belum lengkap dan status bukan belum_daftar --}}
-                                            @if (($item->status == 'sudah_daftar') || ($item->tugas_akhir->status_pemberkasan_sidang == 'belum_lengkap' && $item->status !== 'belum_daftar'))
-                                                <a href="javascript:void(0);" onclick="validasiFile('{{ $item->id }}', '{{ route('apps.jadwal-sidang.validasi-berkas', $item->id) }}')" class="btn btn-sm btn-outline-success my-1" title="Validasi Berkas">
-                                                    <i class="bx bx-pencil"></i>
-                                                </a>
-                                            @endif
-                                            {{-- Jika status sudah_sidang tampilkan tombol detail --}}
-                                            @if ($item->status == 'sudah_sidang')
-                                                <a href="{{ route('apps.jadwal-sidang.show-data', $item) }}" class="btn btn-sm btn-outline-warning my-1" title="Detail Sidang">
-                                                    <i class="bx bx-show"></i>
-                                                </a>
-                                            @endif
-
-                                        @endif
-
-
-                                        @include('administrator.jadwal-sidang.partials.modal')
+                                        @endif @include('administrator.jadwal-sidang.partials.modal')
                                     </td>
                                 </tr>
                             @endif
@@ -663,7 +803,6 @@
         function uploadFileSidang(id, url) {
             $('#id_jadwal_sidang').val(id);
             $('#url_unggah_berkas').val(url);
-            ~
             $('#myModalUpload').find('form').trigger('reset');
             $('#myModalUpload').find('form').attr("action", url);
             $('#myModalUpload').modal('show');

@@ -26,6 +26,7 @@ use App\Models\ProgramStudi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\AutoScheduling\ScheduleService;
 
 class JadwalSidangController extends Controller
 {
@@ -81,13 +82,15 @@ class JadwalSidangController extends Controller
                 $query = $query->whereDate('tanggal', $request->tanggal);
             }
 
-            if ($request->has('status') && !empty($request->status)) {
-                if ($request->status == 'sudah_sidang') {
+          if ($request->has('status') && !empty($request->status)) {
+                if ($request->status == 'draft') {
+                    // Tampilkan draft dan bentrok
+                    $query = $query->whereIn('status', ['draft', 'bentrok']);
+                } elseif ($request->status == 'sudah_sidang') {
                     $query = $query->where('status', $request->status)->whereHas('tugas_akhir', function ($q) use ($request) {
                         $q->where('status_pemberkasan_sidang', 'belum_lengkap');
                     });
                 } else {
-                    // dd('oi');
                     $query = $query->where('status', $request->status)->whereHas('tugas_akhir', function ($q) {
                         $q->where(function ($sub) {
                             $sub->whereNull('status_sidang')->orWhere('status_sidang', 'retrial');
@@ -931,7 +934,7 @@ class JadwalSidangController extends Controller
 
         // Urutkan sesuai peran
         $query = $query->sortBy(function ($item) {
-           preg_match('/^(Pembimbing|Penguji)\s+([IVXLC]+)/', $item['peran'], $matches);
+            preg_match('/^(Pembimbing|Penguji)\s+([IVXLC]+)/', $item['peran'], $matches);
             $jenis = $matches[1] ?? '';
             $romawi = $matches[2] ?? 'I';
 
@@ -1109,5 +1112,195 @@ class JadwalSidangController extends Controller
         ];
 
         return view('administrator.pengajuan-ta.partials.detail', $data);
+    }
+
+    /**
+     * ==============================================================
+     * FITUR AUTO SCHEDULING SIDANG (GENERATE, PUBLISH, RESET)
+     * ==============================================================
+     */
+
+    public function generateAuto(Request $request, ScheduleService $scheduleService)
+    {
+        $request->validate([
+            'start_date'   => 'required|date',
+            'end_date'     => 'required|date|after_or_equal:start_date',
+            'selected_ids' => 'required|array|min:1',
+        ], [
+            'start_date.required' => 'Tanggal mulai harus diisi.',
+            'end_date.required' => 'Tanggal akhir harus diisi.',
+            'end_date.after_or_equal' => 'Tanggal akhir tidak boleh lebih kecil dari tanggal mulai.',
+            'selected_ids.required' => 'Pilih minimal satu mahasiswa untuk di-generate.',
+        ]);
+
+        try {
+            $selectedIds = $request->selected_ids;
+
+            $result = $scheduleService->generate(
+                null,
+                $request->start_date,
+                $request->end_date,
+                $selectedIds,
+                'sidang' // Penanda untuk sidang (cek pembimbing & penguji)
+            );
+
+            if ($result['status'] == 'success') {
+                return redirect()->route('apps.jadwal-sidang', ['status' => 'draft'])->with(['success' => $result['message']]);
+            }
+
+            return redirect()->back()->with(['error' => $result['message']]);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat generate: ' . $e->getMessage()]);
+        }
+    }
+
+    public function publishAuto(Request $request)
+    {
+        try {
+            DB::beginTransaction(); // Memulai transaksi database
+
+            // Ambil semua jadwal sidang yang berstatus draft beserta relasinya
+            $drafts = Sidang::with('tugas_akhir.bimbing_uji')->where('status', 'draft')->get();
+            $publishedCount = 0;
+
+            foreach ($drafts as $draft) {
+                // 1. Update status jadwal ke sudah_terjadwal
+                $draft->update([
+                    'status' => 'sudah_terjadwal',
+                    'keterangan' => 'Jadwal diterbitkan otomatis'
+                ]);
+
+                // 2. Samakan dengan fitur Edit Manual bawaan: hapus penilaian lama
+                if ($draft->tugas_akhir) {
+                    // Update status sidang jika diperlukan (opsional, sesuaikan dengan alurmu)
+                    // $draft->tugas_akhir->update(['status_sidang' => null]);
+
+                    $rating = Penilaian::where('type', 'Sidang')
+                                       ->whereIn('bimbing_uji_id', $draft->tugas_akhir->bimbing_uji->pluck('id'));
+                    if ($rating->count() > 0) {
+                        $rating->delete();
+                    }
+                }
+
+                $publishedCount++;
+            }
+
+            if ($publishedCount == 0) {
+                DB::rollBack();
+                return redirect()->back()->with(['error' => 'Tidak ada jadwal berstatus Draft yang bisa diterbitkan.']);
+            }
+
+            DB::commit(); // Simpan permanen jika semua proses berhasil
+            return redirect()->route('apps.jadwal-sidang', ['status' => 'sudah_terjadwal'])
+                ->with(['success' => "Berhasil menerbitkan $publishedCount jadwal sidang."]);
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Kembalikan ke keadaan semula jika ada error di tengah jalan
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat publish: ' . $e->getMessage()]);
+        }
+    }
+
+    public function publishSingle(Request $request, Sidang $sidang)
+    {
+        try {
+            DB::beginTransaction();
+
+            $sidang->update([
+                'status' => 'sudah_terjadwal',
+                'keterangan' => 'Jadwal diterbitkan manual oleh Admin'
+            ]);
+
+            // Bersihkan penilaian lama
+            if ($sidang->tugas_akhir) {
+                $rating = Penilaian::where('type', 'Sidang')
+                                   ->whereIn('bimbing_uji_id', $sidang->tugas_akhir->bimbing_uji->pluck('id'));
+                if ($rating->count() > 0) {
+                    $rating->delete();
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with(['success' => 'Berhasil menerbitkan jadwal sidang atas nama mahasiswa terkait.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with(['error' => 'Gagal menerbitkan: ' . $e->getMessage()]);
+        }
+    }
+
+    public function resetAuto(Request $request)
+    {
+        try {
+            // Kembalikan semua hasil generate (draft & bentrok) ke status awal (sudah_daftar / Belum Terjadwal)
+            $resetCount = Sidang::whereIn('status', ['draft', 'bentrok'])->update([
+                'ruangan_id'    => null,
+                'sesi_ujian_id' => null,
+                'tanggal'       => null,
+                'jam_mulai'     => null,
+                'jam_selesai'   => null,
+                'status'        => 'sudah_daftar', // <--- Dikembalikan ke status sebelum di-generate
+                'keterangan'    => null
+            ]);
+
+            if ($resetCount == 0) {
+                return redirect()->back()->with(['error' => 'Tidak ada draf jadwal sidang yang bisa di-reset.']);
+            }
+
+            // Arahkan kembali ke tab "Belum Terjadwal" (yang difilter berdasarkan status sudah_daftar)
+            return redirect()->route('apps.jadwal-sidang', ['status' => 'sudah_daftar'])
+                ->with(['success' => "Berhasil mereset $resetCount draf jadwal sidang kembali ke Belum Terjadwal."]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => 'Terjadi kesalahan saat reset: ' . $e->getMessage()]);
+        }
+    }
+
+    public function createAuto(Request $request)
+    {
+        // Ambil data sidang yang siap di-generate (sudah_daftar, draft, atau bentrok)
+        $data = Sidang::with(['tugas_akhir.mahasiswa', 'tugas_akhir.bimbing_uji.dosen'])
+            ->whereIn('status', ['sudah_daftar', 'draft', 'bentrok'])
+            ->get();
+
+        $viewData = [
+            'title' => 'Generate Jadwal Sidang Otomatis',
+            'mods' => 'jadwal_sidang',
+            'breadcrumbs' => [
+                [
+                    'title' => 'Dashboard',
+                    'url' => route('apps.dashboard')
+                ],
+                [
+                    'title' => 'Jadwal Sidang',
+                    'url' => route('apps.jadwal-sidang')
+                ],
+                [
+                    'title' => 'Generate Otomatis',
+                    'is_active' => true,
+                ]
+            ],
+            'data' => $data,
+        ];
+
+        return view('administrator.jadwal-sidang.generate', $viewData);
+    }
+
+    public function reset(Request $request, Sidang $jadwalSidang)
+    {
+        try {
+            // Kosongkan atribut jadwal dan kembalikan statusnya
+            $jadwalSidang->update([
+                'ruangan_id'    => null,
+                'tanggal'       => null,
+                'jam_mulai'     => null,
+                'jam_selesai'   => null,
+                'status'        => 'sudah_daftar', // Kembali ke status awal (Belum Terjadwal)
+                'keterangan'    => null
+            ]);
+
+            return redirect()->route('apps.jadwal-sidang')->with(['success' => 'Berhasil mereset 1 jadwal sidang spesifik']);
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => $e->getMessage()]);
+        }
     }
 }
