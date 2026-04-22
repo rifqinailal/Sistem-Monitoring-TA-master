@@ -57,7 +57,9 @@ class JadwalSeminarController extends Controller
             if ($request->has('status') && !empty($request->status)) {
                 //Jika tab draft, tampilkan yg draft dan bentrok (hasil generate yg gagal)
                 if ($request->status == 'draft') {
-                    $query = $query->whereIn('status', ['draft', 'bentrok']);
+                    $query = $query->whereIn('status', ['draft', 'bentrok'])
+                        ->orderBy('tanggal', 'asc')
+                        ->orderBy('jam_mulai', 'asc');
                 } else {
                     $query = $query->where('status', $request->status)->whereHas('tugas_akhir', function ($q) use ($request) {
                         $q->whereNull('status_sidang');

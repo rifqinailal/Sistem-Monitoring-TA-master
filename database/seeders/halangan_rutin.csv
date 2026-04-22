@@ -1,0 +1,459 @@
+id_dosen,hari,id_sesi,keterangan,id_ruangan
+1,Selasa,6,Mengajar basis data,5
+1,Selasa,7,Mengajar basis data,5
+1,Selasa,8,Mengajar basis data,5
+1,Selasa,9,Mengajar basis data,5
+1,Selasa,10,Mengajar basis data,5
+1,Rabu,1,Mengajar Proyek Aplikasi Data di G7.8,
+1,Rabu,2,Mengajar Proyek Aplikasi Data di G7.8,
+1,Rabu,3,Mengajar Proyek Aplikasi Data di G7.8,
+1,Rabu,4,Mengajar Proyek Aplikasi Data di G7.8,
+1,Rabu,6,Mengajar basis data,5
+1,Rabu,7,Mengajar basis data,5
+1,Rabu,8,Mengajar basis data,5
+1,Rabu,9,Mengajar basis data,5
+1,Rabu,10,Mengajar basis data,5
+1,Kamis,1,Mengajar basis data,5
+1,Kamis,2,Mengajar basis data,5
+1,Kamis,3,Mengajar basis data,5
+1,Kamis,4,Mengajar basis data,5
+1,Kamis,5,Mengajar basis data,5
+2,Kamis,6,Mengajar Metodologi Penelitian di G7.05,
+2,Kamis,7,Mengajar Metodologi Penelitian di G7.06,
+2,Kamis,8,Mengajar Metodologi Penelitian di G7.07,
+2,Kamis,9,Mengajar Metodologi Penelitian di G7.08,
+2,Jumat,1,Mengajar basis data,4
+2,Jumat,2,Mengajar basis data,4
+2,Jumat,3,Mengajar basis data,4
+2,Jumat,4,Mengajar basis data,4
+2,Jumat,8,Mengajar basis data,4
+2,Jumat,9,Mengajar basis data,4
+3,Senin,1,Mengajar Desain Pengalaman Pengguna kelas TRPL-2B di G7.05,
+3,Senin,2,Mengajar Desain Pengalaman Pengguna kelas TRPL-2B di G7.05,
+3,Senin,3,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2B di G7.05,
+3,Senin,4,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2B di G7.05,
+3,Senin,5,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2B di G7.05,
+3,Senin,6,Mengajar Desain Pengalaman Pengguna kelas TRPL-2C di G7.05,
+3,Senin,7,Mengajar Desain Pengalaman Pengguna kelas TRPL-2C di G7.05,
+3,Senin,8,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2C di G7.05,
+3,Senin,9,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2C di G7.05,
+3,Senin,10,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2C di G7.05,
+3,Selasa,1,Mengajar Desain Pengalaman Pengguna kelas TRPL-2D di G7.05,
+3,Selasa,2,Mengajar Desain Pengalaman Pengguna kelas TRPL-2D di G7.05,
+3,Selasa,3,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2D di G7.05,
+3,Selasa,4,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2D di G7.05,
+3,Selasa,5,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2D di G7.05,
+3,Selasa,6,Mengajar Desain Pengalaman Pengguna kelas TRPL-2E di G7.05,
+3,Selasa,7,Mengajar Desain Pengalaman Pengguna kelas TRPL-2E di G7.05,
+3,Selasa,8,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2E di G7.05,
+3,Selasa,9,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2E di G7.05,
+3,Selasa,10,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2E di G7.05,
+4,Kamis,1,Mengajar Pemrograman web dasar kelas BSD-1B di LAB. TUK,8
+4,Kamis,2,Mengajar Pemrograman web dasar kelas BSD-1B di LAB. TUK,8
+4,Kamis,3,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1B di LAB. TUK,8
+4,Kamis,4,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1B di LAB. TUK,8
+4,Kamis,5,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1B di LAB. TUK,8
+4,Kamis,6,Mengajar Pemrograman web dasar kelas BSD-1A di LAB. TUK,8
+4,Kamis,7,Mengajar Pemrograman web dasar kelas BSD-1A di LAB. TUK,8
+4,Kamis,8,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1A di LAB. TUK,8
+4,Kamis,9,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1A di LAB. TUK,8
+4,Kamis,10,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1A di LAB. TUK,8
+4,Jumat,1,Mengajar Pemrograman web dasar kelas BSD-1C di LAB. TUK,8
+4,Jumat,2,Mengajar Pemrograman web dasar kelas BSD-1C di LAB. TUK,8
+4,Jumat,3,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1C di LAB. TUK,8
+4,Jumat,4,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1C di LAB. TUK,8
+4,Jumat,5,Mengajar Praktikum Pemrograman Web Dasar kelas BSD-1C di LAB. TUK,8
+5,Kamis,8,Mengajar Etika Profesi kelas TRK-4A di G7.08,
+5,Kamis,9,Mengajar Etika Profesi kelas TRK-4A di G7.08,
+5,Jumat,1,"Mengajar Keamanan, Kesehatan, dan Keselamatan Kerja kelas TRK-2A di G7.03",
+5,Jumat,2,"Mengajar Keamanan, Kesehatan, dan Keselamatan Kerja kelas TRK-2A di G7.03",
+5,Jumat,3,"Mengajar Keamanan, Kesehatan, dan Keselamatan Kerja kelas TRK-2B di G7.03",
+5,Jumat,4,"Mengajar Keamanan, Kesehatan, dan Keselamatan Kerja kelas TRK-2B di G7.03",
+5,Jumat,6,Mengajar Manajemen Proyek kelas TRPL-2B di G7.03,
+5,Jumat,7,Mengajar Manajemen Proyek kelas TRPL-2B di G7.03,
+5,Jumat,8,Mengajar Manajemen Proyek kelas TRPL-2C di G7.03,
+5,Jumat,9,Mengajar Manajemen Proyek kelas TRPL-2C di G7.03,
+7,Senin,1,Mengajar Pemrograman Web Dasar kelas TRPL-1A di LAB. DESIGN,6
+7,Senin,2,Mengajar Pemrograman Web Dasar kelas TRPL-1A di LAB. DESIGN,6
+7,Senin,3,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1A di LAB. DESIGN,6
+7,Senin,4,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1A di LAB. DESIGN,6
+7,Senin,5,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1A di LAB. DESIGN,6
+7,Senin,6,Mengajar Pemrograman Web Dasar kelas TRPL-1B di LAB. DESIGN,6
+7,Senin,7,Mengajar Pemrograman Web Dasar kelas TRPL-1B di LAB. DESIGN,6
+7,Senin,8,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1B di LAB. DESIGN,6
+7,Senin,9,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1B di LAB. DESIGN,6
+7,Senin,10,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1B di LAB. DESIGN,6
+7,Kamis,1,Mengajar Manajemen Proyek kelas TRPL-2D di G7.03,
+7,Kamis,2,Mengajar Manajemen Proyek kelas TRPL-2D di G7.03,
+7,Kamis,6,Mengajar Proyek Aplikasi Dasar kelas TRPL-2A di G7.06,
+7,Kamis,7,Mengajar Proyek Aplikasi Dasar kelas TRPL-2A di G7.06,
+7,Kamis,8,Mengajar Proyek Aplikasi Dasar kelas TRPL-2A di G7.06,
+7,Kamis,9,Mengajar Proyek Aplikasi Dasar kelas TRPL-2A di G7.06,
+8,Senin,1,Mengajar Penambangan Data kelas BSD-2B di G7.03,
+8,Senin,2,Mengajar Penambangan Data kelas BSD-2B di G7.03,
+8,Senin,3,Mengajar Praktikum Penambangan Data kelas BSD-2B di G7.03,
+8,Senin,4,Mengajar Praktikum Penambangan Data kelas BSD-2B di G7.03,
+8,Senin,5,Mengajar Praktikum Penambangan Data kelas BSD-2B di G7.03,
+8,Senin,6,Mengajar Penambangan Data kelas BSD-2A di G7.03,
+8,Senin,7,Mengajar Penambangan Data kelas BSD-2A di G7.03,
+8,Senin,8,Mengajar Praktikum Penambangan Data kelas BSD-2A di G7.03,
+8,Senin,9,Mengajar Praktikum Penambangan Data kelas BSD-2A di G7.03,
+8,Senin,10,Mengajar Praktikum Penambangan Data kelas BSD-2A di G7.03,
+8,Selasa,6,Mengajar Penambangan Data kelas BSD-2C di G7.03,
+8,Selasa,7,Mengajar Penambangan Data kelas BSD-2C di G7.03,
+8,Selasa,8,Mengajar Praktikum Penambangan Data kelas BSD-2C di G7.03,
+8,Selasa,9,Mengajar Praktikum Penambangan Data kelas BSD-2C di G7.03,
+8,Selasa,10,Mengajar Praktikum Penambangan Data kelas BSD-2C di G7.03,
+9,Selasa,1,Mengajar Mikro Komputer kelas TRK-2B di LAB. HARDWARE,1
+9,Selasa,2,Mengajar Mikro Komputer kelas TRK-2B di LAB. HARDWARE,1
+9,Selasa,3,Mengajar Praktikum Mikro Komputer kelas TRK-2B di LAB. HARDWARE,1
+9,Selasa,4,Mengajar Praktikum Mikro Komputer kelas TRK-2B di LAB. HARDWARE,1
+9,Selasa,5,Mengajar Praktikum Mikro Komputer kelas TRK-2B di LAB. HARDWARE,1
+9,Rabu,6,Mengajar Mikro Komputer kelas TRK-2A di LAB. HARDWARE,1
+9,Rabu,7,Mengajar Mikro Komputer kelas TRK-2A di LAB. HARDWARE,1
+9,Rabu,8,Mengajar Praktikum Mikro Komputer kelas TRK-2A di LAB. HARDWARE,1
+9,Rabu,9,Mengajar Praktikum Mikro Komputer kelas TRK-2A di LAB. HARDWARE,1
+9,Rabu,10,Mengajar Praktikum Mikro Komputer kelas TRK-2A di LAB. HARDWARE,1
+10,Senin,1,Mengajar Rangkaian Elektronika Digital kelas TRK-1A di LAB. HARDWARE,1
+10,Senin,2,Mengajar Rangkaian Elektronika Digital kelas TRK-1A di LAB. HARDWARE,1
+10,Senin,3,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1A di LAB. HARDWARE,1
+10,Senin,4,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1A di LAB. HARDWARE,1
+10,Senin,5,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1A di LAB. HARDWARE,1
+10,Senin,6,Mengajar Rangkaian Elektronika Digital kelas TRK-1B di LAB. HARDWARE,1
+10,Senin,7,Mengajar Rangkaian Elektronika Digital kelas TRK-1B di LAB. HARDWARE,1
+10,Senin,8,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1B di LAB. HARDWARE,1
+10,Senin,9,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1B di LAB. HARDWARE,1
+10,Senin,10,Mengajar Praktikum Rangkaian Elektronika Digital kelas TRK-1B di LAB. HARDWARE,1
+10,Selasa,1,Mengajar Metodologi Penelitian kelas BSD-2A di G7.08,
+10,Selasa,2,Mengajar Metodologi Penelitian kelas BSD-2A di G7.08,
+10,Selasa,3,Mengajar Manajemen Proyek kelas TRPL-2A di G7.08,
+10,Selasa,4,Mengajar Manajemen Proyek kelas TRPL-2A di G7.08,
+11,Senin,1,Mengajar Pemrograman Web Dasar kelas TRPL-1C di LAB. PROGRAM 2,4
+11,Senin,2,Mengajar Pemrograman Web Dasar kelas TRPL-1C di LAB. PROGRAM 2,4
+11,Senin,3,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1C di LAB. PROGRAM 2,4
+11,Senin,4,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1C di LAB. PROGRAM 2,4
+11,Senin,5,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1C di LAB. PROGRAM 2,4
+11,Selasa,1,Mengajar Pemrograman Web Dasar kelas TRPL-1E di LAB. DESIGN,6
+11,Selasa,2,Mengajar Pemrograman Web Dasar kelas TRPL-1E di LAB. DESIGN,6
+11,Selasa,3,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1E di LAB. DESIGN,6
+11,Selasa,4,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1E di LAB. DESIGN,6
+11,Selasa,5,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1E di LAB. DESIGN,6
+11,Selasa,6,Mengajar Pemrograman Web Dasar kelas TRPL-1D di LAB. DESIGN,6
+11,Selasa,7,Mengajar Pemrograman Web Dasar kelas TRPL-1D di LAB. DESIGN,6
+11,Selasa,8,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1D di LAB. DESIGN,6
+11,Selasa,9,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1D di LAB. DESIGN,6
+11,Selasa,10,Mengajar Praktikum Pemrograman Web Dasar kelas TRPL-1D di LAB. DESIGN,6
+11,Rabu,1,Mengajar Desain dan analisa sistem informasi kelas BSD-2B di G7.02,
+11,Rabu,2,Mengajar Desain dan analisa sistem informasi kelas BSD-2B di G7.02,
+11,Rabu,3,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2B di G7.02,
+11,Rabu,4,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2B di G7.02,
+11,Rabu,5,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2B di G7.02,
+12,Senin,1,Mengajar Basis Data kelas TRK-1B di LAB. BASIS DATA,5
+12,Senin,2,Mengajar Basis Data kelas TRK-1B di LAB. BASIS DATA,5
+12,Senin,3,Mengajar Praktikum Basis Data kelas TRK-1B di LAB. BASIS DATA,5
+12,Senin,4,Mengajar Praktikum Basis Data kelas TRK-1B di LAB. BASIS DATA,5
+12,Senin,5,Mengajar Praktikum Basis Data kelas TRK-1B di LAB. BASIS DATA,5
+12,Senin,6,Mengajar Basis Data kelas TRK-1A di LAB. BASIS DATA,5
+12,Senin,7,Mengajar Basis Data kelas TRK-1A di LAB. BASIS DATA,5
+12,Senin,8,Mengajar Praktikum Basis Data kelas TRK-1A di LAB. BASIS DATA,5
+12,Senin,9,Mengajar Praktikum Basis Data kelas TRK-1A di LAB. BASIS DATA,5
+12,Senin,10,Mengajar Praktikum Basis Data kelas TRK-1A di LAB. BASIS DATA,5
+12,Selasa,6,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2B di G7.07,
+12,Selasa,7,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2B di G7.07,
+12,Selasa,8,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2B di G7.07,
+12,Selasa,9,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2B di G7.07,
+12,Selasa,10,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2B di G7.07,
+13,Selasa,1,Mengajar Basis Data kelas TRPL-1D di LAB. BASIS DATA,5
+13,Selasa,2,Mengajar Basis Data kelas TRPL-1D di LAB. BASIS DATA,5
+13,Selasa,3,Mengajar Praktikum Basis Data kelas TRPL-1D di LAB. BASIS DATA,5
+13,Selasa,4,Mengajar Praktikum Basis Data kelas TRPL-1D di LAB. BASIS DATA,5
+13,Selasa,5,Mengajar Praktikum Basis Data kelas TRPL-1D di LAB. BASIS DATA,5
+13,Selasa,6,Mengajar Proyek Aplikasi Dasar kelas TRPL-2C di G7.04,7
+13,Selasa,7,Mengajar Proyek Aplikasi Dasar kelas TRPL-2C di G7.04,7
+13,Selasa,8,Mengajar Proyek Aplikasi Dasar kelas TRPL-2C di G7.04,7
+13,Selasa,9,Mengajar Proyek Aplikasi Dasar kelas TRPL-2C di G7.04,7
+13,Kamis,6,Mengajar Basis Data kelas TRPL-1A di LAB. BASIS DATA,5
+13,Kamis,7,Mengajar Basis Data kelas TRPL-1A di LAB. BASIS DATA,5
+13,Kamis,8,Mengajar Praktikum Basis Data kelas TRPL-1A di LAB. BASIS DATA,5
+13,Kamis,9,Mengajar Praktikum Basis Data kelas TRPL-1A di LAB. BASIS DATA,5
+13,Kamis,10,Mengajar Praktikum Basis Data kelas TRPL-1A di LAB. BASIS DATA,5
+15,Selasa,1,Mengajar Jaringan Komputer Dasar kelas TRK-1A di LAB. MULTIMEDIA,7
+15,Selasa,2,Mengajar Jaringan Komputer Dasar kelas TRK-1A di LAB. MULTIMEDIA,7
+15,Selasa,3,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1A di LAB. MULTIMEDIA,7
+15,Selasa,4,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1A di LAB. MULTIMEDIA,7
+15,Selasa,5,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1A di LAB. MULTIMEDIA,7
+15,Selasa,6,Mengajar Jaringan Komputer Dasar kelas TRK-1B di LAB. MULTIMEDIA,7
+15,Selasa,7,Mengajar Jaringan Komputer Dasar kelas TRK-1B di LAB. MULTIMEDIA,7
+15,Selasa,8,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1B di LAB. MULTIMEDIA,7
+15,Selasa,9,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1B di LAB. MULTIMEDIA,7
+15,Selasa,10,Mengajar Praktikum Jaringan Komputer Dasar kelas TRK-1B di LAB. MULTIMEDIA,7
+15,Rabu,1,Mengajar Desain dan analisa sistem informasi kelas BSD-2A di G7.09,
+15,Rabu,2,Mengajar Desain dan analisa sistem informasi kelas BSD-2A di G7.09,
+15,Rabu,3,Mengajar Desain dan analisa sistem informasi kelas BSD-2A di G7.09,
+15,Rabu,4,Mengajar Desain dan analisa sistem informasi kelas BSD-2A di G7.09,
+15,Rabu,5,Mengajar Desain dan analisa sistem informasi kelas BSD-2A di G7.09,
+16,Senin,1,Mengajar Pemrograman Perangkat Bergerak kelas TRK-2B di LAB. TUK,8
+16,Senin,2,Mengajar Pemrograman Perangkat Bergerak kelas TRK-2B di LAB. TUK,8
+16,Senin,3,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2B di LAB. TUK,8
+16,Senin,4,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2B di LAB. TUK,8
+16,Senin,5,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2B di LAB. TUK,8
+16,Senin,6,Mengajar Pemrograman Perangkat Bergerak kelas TRK-2A di LAB. TUK,8
+16,Senin,7,Mengajar Pemrograman Perangkat Bergerak kelas TRK-2A di LAB. TUK,8
+16,Senin,8,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2A di LAB. TUK,8
+16,Senin,9,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2A di LAB. TUK,8
+16,Senin,10,Mengajar Praktikum Pemrograman Perangkat Bergerak kelas TRK-2A di LAB. TUK,8
+16,Selasa,1,Mengajar Struktur Data kelas TRPL-1A di LAB. PROGRAM 1,3
+16,Selasa,2,Mengajar Struktur Data kelas TRPL-1A di LAB. PROGRAM 1,3
+16,Selasa,3,Mengajar Praktikum Struktur Data kelas TRPL-1A di LAB. PROGRAM 1,3
+16,Selasa,4,Mengajar Praktikum Struktur Data kelas TRPL-1A di LAB. PROGRAM 1,3
+16,Selasa,5,Mengajar Praktikum Struktur Data kelas TRPL-1A di LAB. PROGRAM 1,3
+17,Selasa,6,Mengajar Proyek Aplikasi Dasar kelas TRPL-2D di G7.09,
+17,Selasa,7,Mengajar Proyek Aplikasi Dasar kelas TRPL-2D di G7.09,
+17,Selasa,8,Mengajar Proyek Aplikasi Dasar kelas TRPL-2D di G7.09,
+17,Selasa,9,Mengajar Proyek Aplikasi Dasar kelas TRPL-2D di G7.09,
+17,Jumat,1,Mengajar Struktur Data kelas TRPL-1B di LAB. DESIGN,6
+17,Jumat,2,Mengajar Struktur Data kelas TRPL-1B di LAB. DESIGN,6
+17,Jumat,3,Mengajar Praktikum Struktur Data kelas TRPL-1B di LAB. DESIGN,6
+17,Jumat,4,Mengajar Praktikum Struktur Data kelas TRPL-1B di LAB. DESIGN,6
+17,Jumat,5,Mengajar Praktikum Struktur Data kelas TRPL-1B di LAB. DESIGN,6
+17,Jumat,6,Mengajar Struktur Data kelas TRPL-1C di LAB. DESIGN,6
+17,Jumat,7,Mengajar Struktur Data kelas TRPL-1C di LAB. DESIGN,6
+17,Jumat,8,Mengajar Praktikum Struktur Data kelas TRPL-1C di LAB. DESIGN,6
+17,Jumat,9,Mengajar Praktikum Struktur Data kelas TRPL-1C di LAB. DESIGN,6
+17,Jumat,10,Mengajar Praktikum Struktur Data kelas TRPL-1C di LAB. DESIGN,6
+18,Senin,1,Mengajar Desain Pengalaman Pengguna kelas TRPL-2A di G7.04,
+18,Senin,2,Mengajar Desain Pengalaman Pengguna kelas TRPL-2A di G7.04,
+18,Senin,3,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2A di G7.04,
+18,Senin,4,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2A di G7.04,
+18,Senin,5,Mengajar Praktikum Desain Pengalaman Pengguna kelas TRPL-2A di G7.04,
+18,Rabu,1,Mengajar Struktur Data kelas TRPL-1D di LAB. DESIGN,5
+18,Rabu,2,Mengajar Struktur Data kelas TRPL-1D di LAB. DESIGN,5
+18,Rabu,3,Mengajar Praktikum Struktur Data kelas TRPL-1D di LAB. DESIGN,5
+18,Rabu,4,Mengajar Praktikum Struktur Data kelas TRPL-1D di LAB. DESIGN,5
+18,Rabu,5,Mengajar Praktikum Struktur Data kelas TRPL-1D di LAB. DESIGN,5
+18,Rabu,6,Mengajar Struktur Data kelas TRPL-1E di LAB. DESIGN,6
+18,Rabu,7,Mengajar Struktur Data kelas TRPL-1E di LAB. DESIGN,6
+18,Rabu,8,Mengajar Praktikum Struktur Data kelas TRPL-1E di LAB. DESIGN,6
+18,Rabu,9,Mengajar Praktikum Struktur Data kelas TRPL-1E di LAB. DESIGN,6
+18,Rabu,10,Mengajar Praktikum Struktur Data kelas TRPL-1E di LAB. DESIGN,6
+19,Senin,3,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.10,
+19,Senin,4,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.10,
+19,Senin,6,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.10,
+19,Senin,7,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.10,
+19,Senin,8,Mengajar Aljabar kelas BSD G7.10,
+19,Senin,9,Mengajar Aljabar kelas BSD G7.10,
+19,Selasa,3,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.03,
+19,Selasa,4,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD G7.03,
+19,Selasa,6,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Selasa,7,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Selasa,8,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,1,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,2,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,3,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,4,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,5,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,6,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,7,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+19,Kamis,8,Mengajar Kewirausahaan dan manajemen bisnis kelas BSD di Co working,2
+20,Senin,1,Mengajar Konten Marketing kelas BSD-2A di LAB. COWORKING,2
+20,Senin,2,Mengajar Konten Marketing kelas BSD-2A di LAB. COWORKING,2
+20,Senin,3,Mengajar Praktikum Konten Marketing kelas BSD-2A di LAB. COWORKING,2
+20,Senin,4,Mengajar Praktikum Konten Marketing kelas BSD-2A di LAB. COWORKING,2
+20,Senin,5,Mengajar Praktikum Konten Marketing kelas BSD-2A di LAB. COWORKING,2
+20,Senin,6,Mengajar Konten Marketing kelas BSD-2B di LAB. COWORKING,2
+20,Senin,7,Mengajar Konten Marketing kelas BSD-2B di LAB. COWORKING,2
+20,Senin,8,Mengajar Praktikum Konten Marketing kelas BSD-2B di LAB. COWORKING,2
+20,Senin,9,Mengajar Praktikum Konten Marketing kelas BSD-2B di LAB. COWORKING,2
+20,Senin,10,Mengajar Praktikum Konten Marketing kelas BSD-2B di LAB. COWORKING,2
+20,Selasa,1,Mengajar Konten Marketing kelas BSD-2C di LAB. COWORKING,2
+20,Selasa,2,Mengajar Konten Marketing kelas BSD-2C di LAB. COWORKING,2
+20,Selasa,3,Mengajar Praktikum Konten Marketing kelas BSD-2C di LAB. COWORKING,2
+20,Selasa,4,Mengajar Praktikum Konten Marketing kelas BSD-2C di LAB. COWORKING,2
+20,Selasa,5,Mengajar Praktikum Konten Marketing kelas BSD-2C di LAB. COWORKING,2
+20,Rabu,1,Mengajar Manajemen keuangan kelas BSD-1B di LAB. COWORKING,2
+20,Rabu,2,Mengajar Manajemen keuangan kelas BSD-1B di LAB. COWORKING,2
+20,Rabu,3,Mengajar Praktikum Manajemen Keuangan kelas BSD-1B di LAB. COWORKING,2
+20,Rabu,4,Mengajar Praktikum Manajemen Keuangan kelas BSD-1B di LAB. COWORKING,2
+20,Rabu,5,Mengajar Praktikum Manajemen Keuangan kelas BSD-1B di LAB. COWORKING,2
+20,Rabu,6,Mengajar Manajemen keuangan kelas BSD-1C di LAB. COWORKING,2
+20,Rabu,7,Mengajar Manajemen keuangan kelas BSD-1C di LAB. COWORKING,2
+20,Rabu,8,Mengajar Praktikum Manajemen Keuangan kelas BSD-1C di LAB. COWORKING,2
+20,Rabu,9,Mengajar Praktikum Manajemen Keuangan kelas BSD-1C di LAB. COWORKING,2
+20,Rabu,10,Mengajar Praktikum Manajemen Keuangan kelas BSD-1C di LAB. COWORKING,2
+21,Rabu,1,Mengajar Manajemen Proyek kelas TRPL-2E di G7.06,
+21,Rabu,2,Mengajar Manajemen Proyek kelas TRPL-2E di G7.06,
+21,Jumat,1,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1D di LAB. PROGRAM 1,3
+21,Jumat,2,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1D di LAB. PROGRAM 1,3
+21,Jumat,3,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1D di LAB. PROGRAM 1,3
+21,Jumat,4,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1D di LAB. PROGRAM 1,3
+21,Jumat,5,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1D di LAB. PROGRAM 1,3
+21,Jumat,6,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1E di LAB. PROGRAM 1,3
+21,Jumat,7,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1E di LAB. PROGRAM 1,3
+21,Jumat,8,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1E di LAB. PROGRAM 1,3
+21,Jumat,9,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1E di LAB. PROGRAM 1,3
+21,Jumat,10,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1E di LAB. PROGRAM 1,3
+22,Senin,1,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,2,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,3,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,4,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,5,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,6,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,7,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,8,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,9,Mengajar Sistem Terdistribusi di G7.06,
+22,Senin,10,Mengajar Sistem Terdistribusi di G7.06,
+22,Kamis,6,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Kamis,7,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Kamis,8,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Kamis,9,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Kamis,10,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Jumat,6,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Jumat,7,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Jumat,8,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Jumat,9,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+22,Jumat,10,Mengajar Teknologi Nirkabel di LAB.MULTIMEDIA,7
+23,Senin,1,Mengajar Proyek Aplikasi Dasar kelas TRPL-2E di G7.09,
+23,Senin,2,Mengajar Proyek Aplikasi Dasar kelas TRPL-2E di G7.09,
+23,Senin,3,Mengajar Proyek Aplikasi Dasar kelas TRPL-2E di G7.09,
+23,Senin,4,Mengajar Proyek Aplikasi Dasar kelas TRPL-2E di G7.09,
+23,Selasa,1,Mengajar Keamanan Perangkat Lunak kelas TRPL-2A di G7.04,
+23,Selasa,2,Mengajar Keamanan Perangkat Lunak kelas TRPL-2A di G7.04,
+23,Selasa,3,Mengajar Keamanan Perangkat Lunak kelas TRPL-2B di G7.04,
+23,Selasa,4,Mengajar Keamanan Perangkat Lunak kelas TRPL-2B di G7.04,
+23,Kamis,1,Mengajar Keamanan Perangkat Lunak kelas TRPL-2C di G7.05,
+23,Kamis,2,Mengajar Keamanan Perangkat Lunak kelas TRPL-2C di G7.05,
+23,Kamis,3,Mengajar Keamanan Perangkat Lunak kelas TRPL-2D di G7.05,
+23,Kamis,4,Mengajar Keamanan Perangkat Lunak kelas TRPL-2D di G7.05,
+24,Senin,6,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2A di G7.07,
+24,Senin,7,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2A di G7.07,
+24,Senin,8,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2A di G7.07,
+24,Senin,9,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2A di G7.07,
+24,Senin,10,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2A di G7.07,
+24,Selasa,1,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2C di G7.07,
+24,Selasa,2,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2C di G7.07,
+24,Selasa,3,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2C di G7.07,
+24,Selasa,4,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2C di G7.07,
+24,Selasa,5,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2C di G7.07,
+24,Rabu,6,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2D di G7.07,
+24,Rabu,7,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2D di G7.07,
+24,Rabu,8,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2D di G7.07,
+24,Rabu,9,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2D di G7.07,
+24,Rabu,10,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2D di G7.07,
+24,Kamis,6,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2E di G7.07,
+24,Kamis,7,Mengajar Analisis dan Desain Perangkat Lunak kelas TRPL-2E di G7.07,
+24,Kamis,8,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2E di G7.07,
+24,Kamis,9,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2E di G7.07,
+24,Kamis,10,Mengajar Praktikum Desain Perangkat Lunak kelas TRPL-2E di G7.07,
+25,Senin,1,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,2,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,3,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,4,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,5,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,6,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,7,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,8,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,9,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Senin,10,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Selasa,1,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Selasa,2,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Selasa,3,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Selasa,4,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Selasa,5,Mengajar Studi kelayakan kelas BSD di G7.02,
+25,Kamis,9,Mengajar Studi kelayakan kelas BSD di G7.04,
+25,Kamis,10,Mengajar Studi kelayakan kelas BSD di G7.04,
+26,Rabu,1,Mengajar Pengolahan Sinyal dan Citra Digital kelas TRK-2A di LAB. PROGRAM 1,3
+26,Rabu,2,Mengajar Pengolahan Sinyal dan Citra Digital kelas TRK-2A di LAB. PROGRAM 1,3
+26,Rabu,3,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2A di LAB. PROGRAM 1,3
+26,Rabu,4,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2A di LAB. PROGRAM 1,3
+26,Rabu,5,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2A di LAB. PROGRAM 1,3
+26,Rabu,6,Mengajar Pengolahan Sinyal dan Citra Digital kelas TRK-2B di LAB. PROGRAM 1,3
+26,Rabu,7,Mengajar Pengolahan Sinyal dan Citra Digital kelas TRK-2B di LAB. PROGRAM 1,3
+26,Rabu,8,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2B di LAB. PROGRAM 1,3
+26,Rabu,9,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2B di LAB. PROGRAM 1,3
+26,Rabu,10,Mengajar Praktikum Pengolahan Sinyal dan Citra Digital kelas TRK-2B di LAB. PROGRAM 1,3
+26,Jumat,1,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.07,
+26,Jumat,2,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.07,
+26,Jumat,3,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2C di G7.07,
+26,Jumat,4,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2C di G7.07,
+26,Jumat,5,Mengajar Praktikum Desain dan Analisa Sistem Informasi kelas BSD-2C di G7.07,
+27,Rabu,6,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1C di LAB. PROGRAM 2,4
+27,Rabu,7,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1C di LAB. PROGRAM 2,4
+27,Rabu,8,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1C di LAB. PROGRAM 2,4
+27,Rabu,9,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1C di LAB. PROGRAM 2,4
+27,Rabu,10,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1C di LAB. PROGRAM 2,4
+27,Kamis,1,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1A di LAB. PROGRAM 1,3
+27,Kamis,2,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1A di LAB. PROGRAM 1,3
+27,Kamis,3,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1A di LAB. PROGRAM 1,3
+27,Kamis,4,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1A di LAB. PROGRAM 1,3
+27,Kamis,5,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1A di LAB. PROGRAM 1,3
+27,Kamis,6,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1B di LAB. PROGRAM 1,3
+27,Kamis,7,Mengajar Pemrograman Berorientasi Objek kelas TRPL-1B di LAB. PROGRAM 1,3
+27,Kamis,8,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1B di LAB. PROGRAM 1,3
+27,Kamis,9,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1B di LAB. PROGRAM 1,3
+27,Kamis,10,Mengajar Praktikum Pemrograman Berorientasi Objek kelas TRPL-1B di LAB. PROGRAM 1,3
+28,Senin,6,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7.04,
+28,Senin,7,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7.04,
+28,Senin,8,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2B di G7.04,
+28,Senin,9,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2B di G7.04,
+28,Senin,10,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2B di G7.04,
+28,Selasa,1,Mengajar Sistem Terdistribusi kelas TRPL-2E di G7.06,
+28,Selasa,2,Mengajar Sistem Terdistribusi kelas TRPL-2E di G7.06,
+28,Selasa,3,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2E di G7.06,
+28,Selasa,4,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2E di G7.06,
+28,Selasa,5,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2E di G7.06,
+28,Selasa,6,Mengajar Sistem Terdistribusi kelas TRPL-2A di G7.06,
+28,Selasa,7,Mengajar Sistem Terdistribusi kelas TRPL-2A di G7.06,
+28,Selasa,8,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2A di G7.06,
+28,Selasa,9,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2A di G7.06,
+28,Selasa,10,Mengajar Praktikum Sistem Terdistribusi kelas TRPL-2A di G7.06,
+28,Kamis,1,Mengajar Keamanan Perangkat Lunak kelas TRPL-2E di G7.04,
+28,Kamis,2,Mengajar Keamanan Perangkat Lunak kelas TRPL-2E di G7.04,
+29,Selasa,1,Mengajar Algoritma & Struktur Data kelas TRK-1B di LAB. PROGRAM 2,4
+29,Selasa,2,Mengajar Algoritma & Struktur Data kelas TRK-1B di LAB. PROGRAM 2,4
+29,Selasa,3,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1B di LAB. PROGRAM 2,4
+29,Selasa,4,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1B di LAB. PROGRAM 2,4
+29,Selasa,5,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1B di LAB. PROGRAM 2,4
+29,Selasa,6,Mengajar Algoritma & Struktur Data kelas TRK-1A di LAB. PROGRAM 2,4
+29,Selasa,7,Mengajar Algoritma & Struktur Data kelas TRK-1A di LAB. PROGRAM 2,4
+29,Selasa,8,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1A di LAB. PROGRAM 2,4
+29,Selasa,9,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1A di LAB. PROGRAM 2,4
+29,Selasa,10,Mengajar Praktikum Algoritma & Struktur Data kelas TRK-1A di LAB. PROGRAM 2,4
+29,Kamis,1,Mengajar Machine Learning kelas TRK-2B di LAB. DESIGN,6
+29,Kamis,2,Mengajar Machine Learning kelas TRK-2B di LAB. DESIGN,6
+29,Kamis,3,Mengajar Praktikum Machine Learning kelas TRK-2B di LAB. DESIGN,6
+29,Kamis,4,Mengajar Praktikum Machine Learning kelas TRK-2B di LAB. DESIGN,6
+29,Kamis,5,Mengajar Praktikum Machine Learning kelas TRK-2B di LAB. DESIGN,6
+29,Jumat,6,Mengajar Machine Learning kelas TRK-2A di LAB. TUK,8
+29,Jumat,7,Mengajar Machine Learning kelas TRK-2A di LAB. TUK,8
+29,Jumat,8,Mengajar Praktikum Machine Learning kelas TRK-2A di LAB. TUK,8
+29,Jumat,9,Mengajar Praktikum Machine Learning kelas TRK-2A di LAB. TUK,8
+29,Jumat,10,Mengajar Praktikum Machine Learning kelas TRK-2A di LAB. TUK,8
+30,Selasa,6,Mengajar Manajemen operasional kelas BSD di G7.10,
+30,Selasa,7,Mengajar Manajemen operasional kelas BSD di G7.10,
+30,Rabu,1,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,2,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,3,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,4,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,5,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,6,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,7,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,8,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Rabu,9,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+30,Kamis,1,Mengajar Manajemen SDM keas BSD di G7,
+30,Kamis,2,Mengajar Manajemen SDM keas BSD di G7,
+30,Kamis,3,Mengajar Manajemen SDM keas BSD di G7,
+30,Kamis,4,Mengajar Manajemen SDM keas BSD di G7,
+30,Kamis,6,Mengajar Manajemen SDM keas BSD di G7,
+30,Kamis,7,Mengajar Manajemen SDM keas BSD di G7,
+31,Senin,1,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7,
+31,Senin,2,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7,
+31,Senin,3,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7,
+31,Senin,4,Mengajar Sistem Terdistribusi kelas TRPL-2B di G7,
+31,Rabu,1,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,2,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,3,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,4,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,6,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,7,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,8,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,
+31,Rabu,9,Mengajar Desain dan analisa sistem informasi kelas BSD-2C di G7.04,

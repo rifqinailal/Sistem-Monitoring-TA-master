@@ -30,7 +30,7 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table id="datatable" class="table table-bordered table-striped dt-responsive nowrap w-100">
+                        <table id="datatable" class="table table-bordered table-striped dt-responsive w-100">
                             <thead>
                                 <tr>
                                     <th width="5%">No</th>

@@ -28,6 +28,7 @@ class ScheduleService
     protected $dataSesi = [];
     protected $lockedSlots = [];
     protected $dateList = [];
+    protected $dataRuanganRutin = []; // Tambahan array untuk jadwal rutin ruangan
     protected $modelType;
 
     // ini fungsi untuk entry point controller
@@ -78,9 +79,22 @@ class ScheduleService
 
         foreach (Dosen::with(['halanganRutin', 'halanganTanggal'])->get() as $d) {
             $rutinMap = [];
-            foreach ($d->halanganRutin as $hr) $rutinMap[$hr->hari][$hr->sesi_ujian_id] = true;
+            foreach ($d->halanganRutin as $hr) {
+                // Konversi jika 'ALL' untuk mengakomodasi seluruh sesi di hari tsb
+                $sesiId = $hr->sesi_ujian_id ?? 'ALL';
+                $rutinMap[$hr->hari][$sesiId] = true;
+
+                // Tambahan: Mapping Ruangan Rutin jika atribut ruangan_id tersedia
+                if (!empty($hr->ruangan_id)) {
+                    $this->dataRuanganRutin[$hr->ruangan_id][$hr->hari][$sesiId] = true;
+                }
+            }
+
             $tanggalMap = [];
-            foreach ($d->halanganTanggal as $ht) $tanggalMap[$ht->tanggal][$ht->sesi_ujian_id] = true;
+            foreach ($d->halanganTanggal as $ht) {
+                $sesiId = $ht->sesi_ujian_id ?? 'ALL';
+                $tanggalMap[$ht->tanggal][$sesiId] = true;
+            }
             $this->dataDosen[$d->id] = ['nama' => $d->name, 'rutin' => $rutinMap, 'tanggal' => $tanggalMap];
         }
 
@@ -125,13 +139,14 @@ class ScheduleService
         return $population;
     }
 
-    // ini fungsi untuk hitung fitness
+    // ini fungsi untuk hitung fitness (DIPERBARUI DENGAN CONSTRAINT BARU)
     protected function hitungFitness($genes)
     {
         $totalPenalty = 0;
         $notes = [];
         $localRoom = [];
         $localDosen = [];
+        $dosenDailySchedule = []; // Tambahan untuk tracking mobilitas dosen
 
         foreach ($genes as $gene) {
             $date = $gene['date'];
@@ -139,32 +154,99 @@ class ScheduleService
             $ruangId = $gene['id_ruangan'];
             $dayName = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][Carbon::parse($date)->dayOfWeek];
 
+            $sesiOrder = $this->dataSesi[$sesiId]['order'];
+            $idDb = $gene['id_db'];
+
             $geneConflicts = [];
             $isHardConflict = false;
 
+            // 1. CONSTRAINT BARU: Waktu Ibadah (Jumat Sesi 5)
+            if ($dayName == 'Jumat' && $sesiOrder == 5) {
+                $totalPenalty += $this->penaltyHard;
+                $geneConflicts[] = "Warning: Jumat Sesi 5";
+                $isHardConflict = true;
+            }
+
+            // 2. Constraint: Ruangan Bentrok dengan Sidang Lain
             $keyRoom = "{$date}_{$sesiId}_{$ruangId}";
             if (isset($this->lockedSlots['room'][$keyRoom]) || isset($localRoom[$keyRoom])) {
                 $totalPenalty += $this->penaltyHard;
-                $geneConflicts[] = "Ruangan Bentrok";
+                $geneConflicts[] = "Ruangan Bentrok (Ganda)";
                 $isHardConflict = true;
-            } else $localRoom[$keyRoom] = true;
+            } else {
+                $localRoom[$keyRoom] = true;
+            }
+
+            // 3. CONSTRAINT BARU: Ruangan Dipakai Kuliah Rutin
+            if (isset($this->dataRuanganRutin[$ruangId][$dayName][$sesiId]) || isset($this->dataRuanganRutin[$ruangId][$dayName]['ALL'])) {
+                $totalPenalty += $this->penaltyHard;
+                $geneConflicts[] = "Ruangan Dipakai Kuliah Reguler";
+                $isHardConflict = true;
+            }
 
             foreach ($gene['dosen_ids'] as $dId) {
+                // Cek Dosen Jadwal Ganda
                 $keyDosen = "{$date}_{$sesiId}_{$dId}";
                 if (isset($this->lockedSlots['dosen'][$keyDosen]) || isset($localDosen[$keyDosen])) {
                     $totalPenalty += $this->penaltyHard;
                     $geneConflicts[] = "Dosen jadwal ganda";
                     $isHardConflict = true;
-                } else $localDosen[$keyDosen] = true;
+                } else {
+                    $localDosen[$keyDosen] = true;
+                }
 
-                if (isset($this->dataDosen[$dId]['rutin'][$dayName][$sesiId]) || isset($this->dataDosen[$dId]['tanggal'][$date][$sesiId])) {
+                // Cek Halangan Dosen (Rutin & Tanggal)
+                if (
+                    isset($this->dataDosen[$dId]['rutin'][$dayName][$sesiId]) ||
+                    isset($this->dataDosen[$dId]['rutin'][$dayName]['ALL']) ||
+                    isset($this->dataDosen[$dId]['tanggal'][$date][$sesiId]) ||
+                    isset($this->dataDosen[$dId]['tanggal'][$date]['ALL'])
+                ) {
                     $totalPenalty += $this->penaltyHard;
                     $geneConflicts[] = "Dosen berhalangan";
                     $isHardConflict = true;
                 }
+
+                // Simpan jadwal harian dosen untuk pengecekan mobilitas selanjutnya
+                $dosenDailySchedule[$dId][$date][$sesiOrder] = [
+                    'ruangan_id' => $ruangId,
+                    'id_db'      => $idDb
+                ];
             }
 
-            if ($isHardConflict) $notes[$gene['id_db']] = implode('; ', array_unique($geneConflicts));
+            if ($isHardConflict) {
+                $notes[$idDb] = implode('; ', array_unique($geneConflicts));
+            }
+        }
+
+        // 4. CONSTRAINT BARU: Pengecekan Mobilitas Dosen (Pindah Ruangan di Sesi Berurutan)
+        foreach ($dosenDailySchedule as $dId => $dates) {
+            foreach ($dates as $date => $sessions) {
+                ksort($sessions); // Urutkan sesi berdasarkan urutan jam main (order)
+                $sessionOrders = array_keys($sessions);
+
+                for ($i = 0; $i < count($sessionOrders) - 1; $i++) {
+                    $currOrder = $sessionOrders[$i];
+                    $nextOrder = $sessionOrders[$i + 1];
+
+                    // Jika sesi berurutan tanpa jeda istirahat 1 sesi
+                    if ($nextOrder == $currOrder + 1) {
+                        $currRoom = $sessions[$currOrder]['ruangan_id'];
+                        $nextRoom = $sessions[$nextOrder]['ruangan_id'];
+
+                        // Jika ruangannya berbeda, beri hard penalty
+                        if ($currRoom != $nextRoom) {
+                            $totalPenalty += $this->penaltyHard;
+
+                            $currDbId = $sessions[$currOrder]['id_db'];
+                            $nextDbId = $sessions[$nextOrder]['id_db'];
+
+                            $notes[$currDbId] = isset($notes[$currDbId]) ? $notes[$currDbId] . "; Dosen Pindah Ruangan" : "Dosen Pindah Ruangan";
+                            $notes[$nextDbId] = isset($notes[$nextDbId]) ? $notes[$nextDbId] . "; Dosen Pindah Ruangan" : "Dosen Pindah Ruangan";
+                        }
+                    }
+                }
+            }
         }
 
         return ['score' => 1.0 / (1.0 + $totalPenalty), 'penalty' => $totalPenalty, 'notes' => $notes];
@@ -173,12 +255,11 @@ class ScheduleService
     // ini fungsi untuk seleksi
     protected function seleksi($population)
     {
-        $best = null;
-        for ($i = 0; $i < 3; $i++) {
-            $ind = $population[array_rand($population)];
-            if ($best === null || $ind['fitness_data']['score'] > $best['fitness_data']['score']) $best = $ind;
-        }
-        return $best;
+        // Hanya ambil dari index 0, 1, atau 2 (3 peringkat teratas)
+        $topTiga = array_slice($population, 0, 3);
+
+        // Pilih satu secara acak dari 3 yang terbaik ini
+        return $topTiga[array_rand($topTiga)];
     }
 
     // ini fungsi untuk crossover
@@ -258,6 +339,7 @@ class ScheduleService
             usort($newPopulation, fn($a, $b) => $b['fitness_data']['score'] <=> $a['fitness_data']['score']);
             $population = $newPopulation;
 
+            // BAGIAN TABU SEARCH TERINTEGRASI SEBAGAI LOCAL REPAIR
             if ($population[0]['fitness_data']['score'] < 0.999) {
                 $curr = $population[0];
                 $bestLocal = $curr;
@@ -269,29 +351,51 @@ class ScheduleService
 
                     $targetId = $conflictIds[array_rand($conflictIds)];
                     $geneIndex = -1;
-                    foreach ($curr['genes'] as $k => $g) { if ($g['id_db'] == $targetId) { $geneIndex = $k; break; } }
+                    foreach ($curr['genes'] as $k => $g) {
+                        if ($g['id_db'] == $targetId) {
+                            $geneIndex = $k;
+                            break;
+                        }
+                    }
                     if ($geneIndex === -1) continue;
 
                     $originalGene = $curr['genes'][$geneIndex];
-                    $move = $this->pergerakanTetangga($curr['genes'][$geneIndex]);
 
-                    $curr['genes'][$geneIndex] = $move;
-                    $curr['fitness_data'] = $this->hitungFitness($curr['genes']);
+                    $bestNeigh = null;
+                    $bestMoveHash = null;
 
-                    $moveHash = "{$targetId}_{$move['date']}_{$move['id_sesi']}_{$move['id_ruangan']}";
+                    // EVALUASI 20 PERGERAKAN SEKALIGUS (Exhaustive Neighborhood)
+                    for ($n = 0; $n < 20; $n++) {
+                        $move = $this->pergerakanTetangga($originalGene);
 
-                    if ($this->cekTabu($moveHash, $tabuList, $curr['fitness_data']['score'], $bestLocal['fitness_data']['score'])) {
-                        $curr['genes'][$geneIndex] = $originalGene;
-                        continue;
+                        // Buat salinan gen tetangga
+                        $neighGenes = $curr['genes'];
+                        $neighGenes[$geneIndex] = $move;
+                        $neighFitness = $this->hitungFitness($neighGenes);
+
+                        $moveHash = "{$targetId}_{$move['date']}_{$move['id_sesi']}_{$move['id_ruangan']}";
+
+                        // Cek Tabu Aspiration (diterima jika fitness melampaui rekor atau tidak ada di tabulist)
+                        if (!$this->cekTabu($moveHash, $tabuList, $neighFitness['score'], $bestLocal['fitness_data']['score'])) {
+                            if ($bestNeigh === null || $neighFitness['score'] > $bestNeigh['fitness_data']['score']) {
+                                $bestNeigh = [
+                                    'genes' => $neighGenes,
+                                    'fitness_data' => $neighFitness
+                                ];
+                                $bestMoveHash = $moveHash;
+                            }
+                        }
                     }
 
-                    if ($curr['fitness_data']['score'] > $bestLocal['fitness_data']['score']) {
-                        $bestLocal = $curr;
-                        $tabuList[] = $moveHash;
-                        if (count($tabuList) > $this->tabuTenure) array_shift($tabuList);
-                    } else {
-                        $curr['genes'][$geneIndex] = $originalGene;
-                        $curr['fitness_data'] = $bestLocal['fitness_data'];
+                    // Terapkan tetangga terbaik
+                    if ($bestNeigh !== null) {
+                        $curr = $bestNeigh;
+
+                        if ($curr['fitness_data']['score'] > $bestLocal['fitness_data']['score']) {
+                            $bestLocal = $curr;
+                            $tabuList[] = $bestMoveHash;
+                            if (count($tabuList) > $this->tabuTenure) array_shift($tabuList);
+                        }
                     }
                 }
                 $population[0] = $bestLocal;
