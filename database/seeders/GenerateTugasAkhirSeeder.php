@@ -130,7 +130,7 @@ class GenerateTugasAkhirSeeder extends Seeder
                         'tipe'          => $proj['is_group'] ? 'K' : 'I',
                         'status'        => 'acc',
                         'is_completed'  => 1,
-                        'status_pemberkasan' => 'sudah_lengkap', // Sesuai ENUM di database
+                        'status_pemberkasan' => 'belum_lengkap', // Sesuai ENUM di database
                     ]);
 
                     $roles = [
@@ -151,8 +151,16 @@ class GenerateTugasAkhirSeeder extends Seeder
 
                     JadwalSeminar::create([
                         'tugas_akhir_id' => $ta->id,
-                        'status'         => 'belum_terjadwal',
+                        'status'         => 'belum_terjadwal', // Anggap sudah selesai seminar
                     ]);
+
+                    // ==========================================
+                    // KODE TAMBAHAN UNTUK TESTING SIDANG
+                    // ==========================================
+                    // \App\Models\Sidang::create([
+                    //     'tugas_akhir_id' => $ta->id,
+                    //     'status'         => 'sudah_daftar', // Akan muncul di Tab Belum Daftar (Belum Terjadwal)
+                    // ]);
 
                     $totalTa++;
                 }
