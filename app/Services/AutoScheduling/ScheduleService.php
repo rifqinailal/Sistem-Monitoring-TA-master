@@ -17,8 +17,8 @@ class ScheduleService
     protected $maxGeneration  = 50;
     protected $crossoverRate  = 0.8;
     protected $mutationRate   = 0.2;
-    protected $maxTabuIter    = 50;
-    protected $tabuTenure     = 10;
+    protected $maxTabuIter    = 100;
+    protected $tabuTenure     = 20;
     protected $penaltyHard    = 1.0;
     protected $penaltySoft    = 0.5;
 
@@ -95,7 +95,7 @@ class ScheduleService
         }
 
         $modelClass = ($this->modelType == 'sidang') ? Sidang::class : JadwalSeminar::class;
-        $fixed = $modelClass::where('status', 'sudah_terjadwal')->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
+        $fixed = $modelClass::where('status', ['sudah_terjadwal', 'draft'])->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
 
         foreach ($fixed as $fix) {
             $this->lockedSlots['room']["{$fix->tanggal}_{$fix->sesi_ujian_id}_{$fix->ruangan_id}"] = true;
@@ -187,6 +187,7 @@ class ScheduleService
         }
 
         usort($population, fn($a, $b) => $b['fitness_data']['score'] <=> $a['fitness_data']['score']);
+        //dd($population[0]);
         return $population;
     }
 
@@ -194,6 +195,7 @@ class ScheduleService
     {
         $totalPenalty = 0;
         $notes = [];
+        $warnings = [];
         $localRoom = [];
         $localDosen = [];
         $dosenDailySchedule = [];
@@ -268,11 +270,14 @@ class ScheduleService
                 ksort($sessions);
                 $sessionOrders = array_keys($sessions);
 
+                $consecutiveCount = 1; // Counter untuk soft constraint
+
                 for ($i = 0; $i < count($sessionOrders) - 1; $i++) {
                     $currOrder = $sessionOrders[$i];
                     $nextOrder = $sessionOrders[$i + 1];
 
                     if ($nextOrder == $currOrder + 1) {
+                        // Cek Mobilitas (Hard Constraint)
                         $currRoom = $sessions[$currOrder]['ruangan_id'];
                         $nextRoom = $sessions[$nextOrder]['ruangan_id'];
 
@@ -285,17 +290,31 @@ class ScheduleService
                             $notes[$currDbId] = isset($notes[$currDbId]) ? $notes[$currDbId] . "; Dosen Pindah Ruangan" : "Dosen Pindah Ruangan";
                             $notes[$nextDbId] = isset($notes[$nextDbId]) ? $notes[$nextDbId] . "; Dosen Pindah Ruangan" : "Dosen Pindah Ruangan";
                         }
+
+                        // Cek > 3 Sesi Berturut-turut (Soft Constraint)
+                        $consecutiveCount++;
+                        if ($consecutiveCount > 3) {
+                            $totalPenalty += $this->penaltySoft;
+
+                            $dbId = $sessions[$nextOrder]['id_db'];
+                            $warnings[$dbId] = isset($warnings[$dbId]) ? $warnings[$dbId] . "; Dosen >3 sesi beruntun" : "Dosen >3 sesi beruntun";
+
+                            $consecutiveCount = 1; // Reset setelah memberi penalti
+                        }
+                    } else {
+                        $consecutiveCount = 1; // Reset jika ada jeda istirahat
                     }
                 }
             }
         }
-
-        return ['score' => 1.0 / (1.0 + $totalPenalty), 'penalty' => $totalPenalty, 'notes' => $notes];
+        //dd(json_encode(['score' => 1.0 / (1.0 + $totalPenalty), 'penalty' => $totalPenalty, 'notes' => $notes, 'warnings' => $warnings], JSON_PRETTY_PRINT));
+        return ['score' => 1.0 / (1.0 + $totalPenalty), 'penalty' => $totalPenalty, 'notes' => $notes, 'warnings' => $warnings];
     }
 
     protected function seleksi($population)
     {
         $topTiga = array_slice($population, 0, 3);
+        //dd($topTiga[array_rand($topTiga)]);
         return $topTiga[array_rand($topTiga)];
     }
 
@@ -306,15 +325,24 @@ class ScheduleService
 
         $child1 = array_merge(array_slice($genes1, 0, $point), array_slice($genes2, $point));
         $child2 = array_merge(array_slice($genes2, 0, $point), array_slice($genes1, $point));
-
+        //dd(json_encode([$child1, $child2], JSON_PRETTY_PRINT));
         return [$child1, $child2];
     }
 
     protected function mutasi(&$genes)
     {
+
         if (rand(0, 100) / 100 > $this->mutationRate) return;
+
+        // Pilih satu jadwal mahasiswa secara acak untuk dimutasi
         $idx = array_rand($genes);
-        $genes[$idx] = $this->pergerakanTetangga($genes[$idx]);
+
+        $sesiIds = array_keys($this->dataSesi);
+        $ruangIds = array_keys($this->dataRuangan);
+
+        $genes[$idx]['date']       = $this->dateList[array_rand($this->dateList)];
+        $genes[$idx]['id_sesi']    = $sesiIds[array_rand($sesiIds)];
+        $genes[$idx]['id_ruangan'] = $ruangIds[array_rand($ruangIds)];
     }
 
 
@@ -330,7 +358,7 @@ class ScheduleService
 
             // 1. Identifikasi Konflik
             $conflictIds = $this->identifikasiKonflik($curr);
-            if (empty($conflictIds)) break; // Berhenti jika jadwal sudah aman (fitness 1.0)
+            if (empty($conflictIds)) break; // Berhenti jika jadwal sudah aman
 
             // Memilih acak satu jadwal yang bentrok
             $targetId = $conflictIds[array_rand($conflictIds)];
@@ -355,10 +383,10 @@ class ScheduleService
         return $bestLocal;
     }
 
-    // TAHAP 1: Identifikasi Konflik
     protected function identifikasiKonflik($individual)
     {
-        // Mengembalikan array ID mahasiswa yang jadwalnya bermasalah
+        // Mengembalikan array ID mahasiswa yang jadwalnya bermasalah (Hanya Hard Constraint)
+        //dd($individual['fitness_data']['notes']);
         return array_keys($individual['fitness_data']['notes']);
     }
 
@@ -394,49 +422,67 @@ class ScheduleService
         return ['neighbor' => $bestNeigh, 'hash' => $bestMoveHash];
     }
 
-    // Helper untuk mengubah jadwal secara acak (digunakan Mutasi dan TS)
+    // Helper untuk mengubah jadwal secara acak
     protected function pergerakanTetangga($gene)
     {
-        $sesiIds = array_keys($this->dataSesi);
-        $ruangIds = array_keys($this->dataRuangan);
-        $sebelum = $gene;
+        $kandidatSlot = [];
 
-        $gene['date'] = $this->dateList[array_rand($this->dateList)];
-        $gene['id_sesi'] = $sesiIds[array_rand($sesiIds)];
-        $gene['id_ruangan'] = $ruangIds[array_rand($ruangIds)];
+        // Mencari kombinasi Hari, Sesi, dan Ruangan yang tidak melanggar aturan dasar
+        foreach ($this->dateList as $date) {
+            $dayName = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][Carbon::parse($date)->dayOfWeek];
 
-        // dd([
-        //     'Gen_Sebelum_Pergerakan' => $sebelum,
-        //     'Gen_Sesudah_Pergerakan' => $gene
-        // ]);
+            foreach ($this->dataSesi as $sesiId => $sesi) {
+
+                $dosenAman = true;
+                foreach ($gene['dosen_ids'] as $dId) {
+                    if (
+                        isset($this->dataDosen[$dId]['rutin'][$dayName][$sesiId]) ||
+                        isset($this->dataDosen[$dId]['tanggal'][$date][$sesiId])
+                    ) {
+                        $dosenAman = false;
+                        break;
+                    }
+                }
+                if (!$dosenAman) continue;
+
+                foreach ($this->dataRuangan as $ruangId => $namaRuang) {
+                    if (isset($this->dataRuanganRutin[$ruangId][$dayName][$sesiId])) continue;
+
+                    $kandidatSlot[] = [
+                        'date' => $date,
+                        'id_sesi' => $sesiId,
+                        'id_ruangan' => $ruangId
+                    ];
+                }
+            }
+        }
+
+        // Eksekusi Pemilihan Slot
+        if (count($kandidatSlot) > 0) {
+            // Ambil acak dari slot yang SUDAH TERSARING aman
+            $slotTerpilih = $kandidatSlot[array_rand($kandidatSlot)];
+            $gene['date']       = $slotTerpilih['date'];
+            $gene['id_sesi']    = $slotTerpilih['id_sesi'];
+            $gene['id_ruangan'] = $slotTerpilih['id_ruangan'];
+        } else {
+            $sesiIds = array_keys($this->dataSesi);
+            $ruangIds = array_keys($this->dataRuangan);
+
+            $gene['date']       = $this->dateList[array_rand($this->dateList)];
+            $gene['id_sesi']    = $sesiIds[array_rand($sesiIds)];
+            $gene['id_ruangan'] = $ruangIds[array_rand($ruangIds)];
+        }
+
         return $gene;
     }
 
     // Helper untuk mengecek Daftar Terlarang
     protected function cekTabu($moveHash, $tabuList, $currentScore, $bestScore)
     {
+        //dd(json_encode(['hash_kandidat' => $moveHash, 'memori_tabu_list' => $tabuList, 'skor_kandidat' => $currentScore, 'rekor_terbaik' => $bestScore], JSON_PRETTY_PRINT));
         return in_array($moveHash, $tabuList) && $currentScore <= $bestScore;
     }
-    // protected function cekTabu($moveHash, $tabuList, $currentScore, $bestScore)
-    // {
-    //     $isTabu = in_array($moveHash, $tabuList);
-    //     $hasilFinal = $isTabu && $currentScore <= $bestScore;
 
-    //     if (count($tabuList) >= 1) {
-    //         dd([
-    //             'Hash_Kandidat_Pergerakan' => $moveHash,
-    //             'Isi_Memori_Tabu_List' => $tabuList,
-    //             'Apakah_Ada_Di_Tabu_List' => $isTabu ? 'Ya, Terlarang' : 'Tidak',
-    //             'Skor_Kandidat_vs_Rekor' => $currentScore . ' vs ' . $bestScore,
-    //             'Keputusan_Akhir' => $hasilFinal ? 'DITOLAK (Masuk Tabu)' : 'DITERIMA (Sah / Aspiration)'
-    //         ]);
-    //     }
-
-    //     return $hasilFinal;
-    // }
-
-    // TAHAP 4: Pembaruan Memori & Jadwal
-    // Note: Parameter menggunakan "&" (reference) agar variabel asli ikut berubah
     protected function pembaruanMemori($bestNeighData, &$curr, &$bestLocal, &$tabuList)
     {
         if ($bestNeighData['neighbor'] !== null) {
@@ -455,25 +501,39 @@ class ScheduleService
                 }
             }
         }
+        //dd(json_encode(['rekor_terbaru' => $bestLocal['fitness_data']['score'], 'isi_tabu_list_terkini' => $tabuList], JSON_PRETTY_PRINT));
     }
 
     protected function simpanKeDatabase($bestSchedule)
     {
         $modelClass = ($this->modelType == 'sidang') ? Sidang::class : JadwalSeminar::class;
         $notes = $bestSchedule['fitness_data']['notes'];
+        $warnings = $bestSchedule['fitness_data']['warnings']; // Ambil data soft constraint
 
         DB::beginTransaction();
         try {
             foreach ($bestSchedule['genes'] as $gene) {
                 $id = $gene['id_db'];
+
+                // Logika pemisahan status
+                $statusAkhir = isset($notes[$id]) ? 'bentrok' : 'draft';
+
+                // Logika penulisan keterangan
+                $keteranganAkhir = 'Tidak ada bentrok jadwal';
+                if (isset($notes[$id])) {
+                    $keteranganAkhir = $notes[$id];
+                } elseif (isset($warnings[$id])) {
+                    $keteranganAkhir = "Tidak ada bentrok jadwal, tapi: " . $warnings[$id];
+                }
+
                 $modelClass::where('id', $id)->update([
                     'tanggal'       => $gene['date'],
                     'sesi_ujian_id' => $gene['id_sesi'],
                     'ruangan_id'    => $gene['id_ruangan'],
                     'jam_mulai'     => $this->dataSesi[$gene['id_sesi']]['jam_mulai'],
                     'jam_selesai'   => $this->dataSesi[$gene['id_sesi']]['jam_selesai'],
-                    'status'        => isset($notes[$id]) ? 'bentrok' : 'draft',
-                    'keterangan'    => isset($notes[$id]) ? $notes[$id] : 'Aman (Auto Generated)',
+                    'status'        => $statusAkhir,
+                    'keterangan'    => $keteranganAkhir,
                 ]);
             }
             DB::commit();

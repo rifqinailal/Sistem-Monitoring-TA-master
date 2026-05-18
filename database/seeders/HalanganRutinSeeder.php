@@ -12,6 +12,11 @@ class HalanganRutinSeeder extends Seeder
 {
     public function run(): void
     {
+        // ==========================================
+        // CONFIG: GANTI NAMA FILE DI SINI
+        // ==========================================
+        $fileName = 'halangan_rutin_ganjil.csv'; // Ubah jadi 'halangan_rutin_ganjil.csv' jika perlu
+
         // Kosongkan tabel agar data tidak dobel saat dijalankan ulang
         DB::table('dosen_halangan_rutins')->truncate();
 
@@ -22,16 +27,13 @@ class HalanganRutinSeeder extends Seeder
         $pathDosenCsv = database_path('seeders/dosen_kamus.csv');
         if (file_exists($pathDosenCsv)) {
             $file = fopen($pathDosenCsv, 'r');
-            fgetcsv($file); // Lewati baris header
+            fgetcsv($file);
             while (($row = fgetcsv($file)) !== false) {
                 if (isset($row[0]) && isset($row[1])) {
-                    $kamusDosenCsv[trim($row[0])] = trim($row[1]); // [id_csv => nama_dosen]
+                    $kamusDosenCsv[trim($row[0])] = trim($row[1]);
                 }
             }
             fclose($file);
-        } else {
-            $this->command->error("File dosen_kamus.csv tidak ditemukan!");
-            return;
         }
 
         // ==========================================
@@ -41,34 +43,28 @@ class HalanganRutinSeeder extends Seeder
         $pathRuanganCsv = database_path('seeders/ruangan_kamus.csv');
         if (file_exists($pathRuanganCsv)) {
             $file = fopen($pathRuanganCsv, 'r');
-            fgetcsv($file); // Lewati baris header
+            fgetcsv($file);
             while (($row = fgetcsv($file)) !== false) {
                 if (isset($row[0]) && isset($row[1])) {
-                    $kamusRuanganCsv[trim($row[0])] = trim($row[1]); // [id_csv => nama_ruangan]
+                    $kamusRuanganCsv[trim($row[0])] = trim($row[1]);
                 }
             }
             fclose($file);
         }
 
         // ==========================================
-        // 3. AMBIL DATA ASLI DARI DATABASE
+        // 3 & 4. AMBIL DATA DB & MAPPING
         // ==========================================
         $dosensDb = Dosen::all();
         $ruangansDb = Ruangan::all();
 
-        // ==========================================
-        // 4. PENCOCOKAN (MAPPING) NAMA KE ID DATABASE
-        // ==========================================
         $dosenMap = [];
         foreach ($kamusDosenCsv as $csvId => $namaCsv) {
             $match = $dosensDb->first(function ($d) use ($namaCsv) {
-                // Menyesuaikan kolom nama di DB (bisa nama_dosen, nama, atau name)
                 $namaDb = $d->nama_dosen ?? $d->nama ?? $d->name ?? '';
                 return stripos($namaDb, $namaCsv) !== false || stripos($namaCsv, $namaDb) !== false;
             });
-            if ($match) {
-                $dosenMap[$csvId] = $match->id;
-            }
+            if ($match) $dosenMap[$csvId] = $match->id;
         }
 
         $ruanganMap = [];
@@ -77,39 +73,49 @@ class HalanganRutinSeeder extends Seeder
                 $namaDb = $r->nama_ruangan ?? $r->nama ?? '';
                 return stripos($namaDb, $namaCsv) !== false || stripos($namaCsv, $namaDb) !== false;
             });
-            if ($match) {
-                $ruanganMap[$csvId] = $match->id;
-            }
+            if ($match) $ruanganMap[$csvId] = $match->id;
         }
 
         // ==========================================
-        // 5. BACA FILE HALANGAN RUTIN & INSERT
+        // 5. BACA FILE UTAMA (FLEKSIBEL)
         // ==========================================
-        $pathRutinCsv = database_path('seeders/halangan_rutin.csv');
+        $pathRutinCsv = database_path('seeders/' . $fileName);
         if (!file_exists($pathRutinCsv)) {
-            $this->command->error("File halangan_rutin.csv tidak ditemukan!");
+            $this->command->error("File {$fileName} tidak ditemukan!");
             return;
         }
 
         $dataToInsert = [];
         $file = fopen($pathRutinCsv, 'r');
-        fgetcsv($file); // Lewati Header
+
+        // Ambil Header dan bersihkan dari spasi / karakter aneh (BOM) Excel
+        $headers = fgetcsv($file);
+        $headers[0] = trim($headers[0], "\xEF\xBB\xBF"); // Hapus BOM Mark
+        $headers = array_map('trim', $headers);
+        $headers = array_map('strtolower', $headers); // Jadikan huruf kecil semua
 
         while (($row = fgetcsv($file)) !== false) {
-            // Format CSV: id_dosen, hari, id_sesi, keterangan, id_ruangan
-            if (count($row) < 4) continue;
+            // Mapping Dinamis: Pasangkan isi data dengan nama Headernya
+            $rowData = [];
+            foreach ($headers as $index => $headerName) {
+                $rowData[$headerName] = isset($row[$index]) ? trim($row[$index]) : null;
+            }
 
-            $csvDosenId = trim($row[0]);
-            $hari = ucfirst(strtolower(trim($row[1]))); // Pastikan format Hari sesuai ENUM
-            $sesiId = trim($row[2]);
-            $keterangan = trim($row[3]);
-            $csvRuanganId = isset($row[4]) && trim($row[4]) !== '' ? trim($row[4]) : null;
+            // Ekstrak data berdasarkan kombinasi nama kolom Genap / Ganjil
+            $csvDosenId = $rowData['id_dosen'] ?? $rowData['dosen_id'] ?? null;
+            $hari       = ucfirst(strtolower($rowData['hari'] ?? ''));
+            $sesiId     = $rowData['id_sesi'] ?? $rowData['sesi_ujian_id'] ?? null;
+            $keterangan = $rowData['keterangan'] ?? '';
 
-            // Dapatkan ID asli dari hasil mapping
-            $realDosenId = $dosenMap[$csvDosenId] ?? null;
-            $realRuanganId = $csvRuanganId ? ($ruanganMap[$csvRuanganId] ?? null) : null;
+            // Handle ID Ruangan (Jika format Ganjil ada tulisan 'NULL' teks)
+            $csvRuanganIdRaw = $rowData['id_ruangan'] ?? $rowData['ruangan_id'] ?? null;
+            $csvRuanganId = (strtoupper($csvRuanganIdRaw) === 'NULL' || $csvRuanganIdRaw === '') ? null : $csvRuanganIdRaw;
 
-            // Jika dosen asli ditemukan dan sesi valid
+            // PENCOCOKAN ID SUPER CERDAS:
+            // Cek di kamus. Jika tidak ada di kamus, TAPI dia berupa angka (ID langsung dari Sistem Ganjil), pakai angka itu.
+            $realDosenId = $dosenMap[$csvDosenId] ?? (is_numeric($csvDosenId) ? $csvDosenId : null);
+            $realRuanganId = $csvRuanganId ? ($ruanganMap[$csvRuanganId] ?? (is_numeric($csvRuanganId) ? $csvRuanganId : null)) : null;
+
             if ($realDosenId && is_numeric($sesiId)) {
                 $dataToInsert[] = [
                     'dosen_id'      => $realDosenId,
@@ -125,16 +131,16 @@ class HalanganRutinSeeder extends Seeder
         fclose($file);
 
         // ==========================================
-        // 6. PROSES INSERT (CHUNK)
+        // 6. PROSES INSERT
         // ==========================================
         if (count($dataToInsert) > 0) {
-            $chunks = array_chunk($dataToInsert, 500); // Eksekusi per 500 baris agar tidak berat
+            $chunks = array_chunk($dataToInsert, 500);
             foreach ($chunks as $chunk) {
                 DB::table('dosen_halangan_rutins')->insert($chunk);
             }
-            $this->command->info('SUKSES! ' . count($dataToInsert) . ' data Halangan Rutin berhasil di-import dan dicocokkan.');
+            $this->command->info("SUKSES! " . count($dataToInsert) . " data dari file [{$fileName}] berhasil di-import.");
         } else {
-            $this->command->warn('Tidak ada data yang cocok untuk dimasukkan.');
+            $this->command->warn("Tidak ada data yang valid untuk dimasukkan dari file [{$fileName}].");
         }
     }
 }

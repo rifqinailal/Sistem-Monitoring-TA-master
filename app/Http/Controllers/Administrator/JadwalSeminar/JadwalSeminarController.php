@@ -418,7 +418,7 @@ class JadwalSeminarController extends Controller
                 }
             }
 
-           
+
             $jadwalSeminar->update([
                 'ruangan_id' => $request->ruangan,
                 'tanggal' => $request->tanggal,
@@ -731,7 +731,7 @@ class JadwalSeminarController extends Controller
     {
 
         $data = JadwalSeminar::with(['tugas_akhir.mahasiswa', 'tugas_akhir.bimbing_uji.dosen'])
-            ->whereIn('status', ['belum_terjadwal', 'draft', 'bentrok'])
+            ->whereIn('status', ['belum_terjadwal'])
             ->get();
 
         $viewData = [

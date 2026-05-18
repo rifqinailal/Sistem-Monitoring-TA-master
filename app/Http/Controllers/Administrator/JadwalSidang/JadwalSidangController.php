@@ -453,7 +453,7 @@ class JadwalSidangController extends Controller
                 'jam_selesai' => $request->jam_selesai,
                 'status' => 'sudah_terjadwal'
             ]);
-  // $jadwalSidang->tugas_akhir->update(['status_sidang' => null, 'status_pemberkasan' => 'belum_lengkap']);
+            // $jadwalSidang->tugas_akhir->update(['status_sidang' => null, 'status_pemberkasan' => 'belum_lengkap']);
             $rating = \App\Models\Penilaian::where('type', 'Sidang')->whereIn('bimbing_uji_id', $jadwalSidang->tugas_akhir->bimbing_uji->pluck('id'));
             if ($rating->count() > 0) {
                 $rating->delete();
@@ -1381,7 +1381,7 @@ class JadwalSidangController extends Controller
     {
         // Ambil data sidang yang siap di-generate (sudah_daftar, draft, atau bentrok)
         $data = Sidang::with(['tugas_akhir.mahasiswa', 'tugas_akhir.bimbing_uji.dosen'])
-            ->whereIn('status', ['sudah_daftar', 'draft', 'bentrok'])
+            ->whereIn('status', ['sudah_daftar'])
             ->get();
 
         $viewData = [
