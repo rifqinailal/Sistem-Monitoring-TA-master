@@ -24,7 +24,7 @@ class HalanganRutinController extends Controller
 
         $dosenIdLoggedIn = null;
 
-        if ($user->hasRole('Dosen')) {
+        if ($user->hasRole(['Dosen', 'Kaprodi'])) {
             $dosenIdLoggedIn = $user->userable_id;
             $query->where('dosen_id', $dosenIdLoggedIn);
         }
@@ -81,6 +81,11 @@ class HalanganRutinController extends Controller
             'keterangan' => 'required',
         ]);
 
+        $user = Auth::user();
+        // Keamanan: Paksa dosen_id menggunakan ID user yang login jika dia Dosen/Kaprodi
+        if ($user->hasRole(['Dosen', 'Kaprodi'])) {
+            $request->merge(['dosen_id' => $user->userable_id]);
+        }
         try {
             DB::beginTransaction();
 
@@ -141,6 +146,11 @@ class HalanganRutinController extends Controller
             'sesi_ujian_ids' => 'required|array',
             'original_ids' => 'required',
         ]);
+
+        $user = Auth::user();
+        if ($user->hasRole(['Dosen', 'Kaprodi'])) {
+            $request->merge(['dosen_id' => $user->userable_id]);
+        }
 
         try {
             DB::beginTransaction();

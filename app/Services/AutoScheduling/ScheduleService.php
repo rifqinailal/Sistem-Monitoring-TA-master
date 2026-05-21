@@ -95,7 +95,7 @@ class ScheduleService
         }
 
         $modelClass = ($this->modelType == 'sidang') ? Sidang::class : JadwalSeminar::class;
-        $fixed = $modelClass::where('status', ['sudah_terjadwal', 'draft'])->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
+        $fixed = $modelClass::whereIn('status', ['sudah_terjadwal', 'draft'])->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
 
         foreach ($fixed as $fix) {
             $this->lockedSlots['room']["{$fix->tanggal}_{$fix->sesi_ujian_id}_{$fix->ruangan_id}"] = true;

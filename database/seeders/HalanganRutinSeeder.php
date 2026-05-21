@@ -15,7 +15,7 @@ class HalanganRutinSeeder extends Seeder
         // ==========================================
         // CONFIG: GANTI NAMA FILE DI SINI
         // ==========================================
-        $fileName = 'halangan_rutin_ganjil.csv'; // Ubah jadi 'halangan_rutin_ganjil.csv' jika perlu
+        $fileName = 'halangan_rutin_genap.csv'; // Ubah jadi 'halangan_rutin_ganjil.csv' jika perlu
 
         // Kosongkan tabel agar data tidak dobel saat dijalankan ulang
         DB::table('dosen_halangan_rutins')->truncate();

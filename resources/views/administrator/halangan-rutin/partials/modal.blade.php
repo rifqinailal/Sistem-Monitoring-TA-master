@@ -12,7 +12,7 @@
 
                 <div class="modal-body">
 
-                    @if (Auth::user()->hasRole(['Admin', 'Kaprodi', 'Developer']))
+                    @if (Auth::user()->hasRole(['Admin', 'Developer']))
                         <div class="mb-3">
                             <label class="form-label">Dosen</label>
                             <select name="dosen_id" id="dosen_id" class="form-control select2" style="width: 100%"
