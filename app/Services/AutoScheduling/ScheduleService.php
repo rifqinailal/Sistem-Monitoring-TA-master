@@ -78,24 +78,32 @@ class ScheduleService
         foreach (Dosen::with(['halanganRutin', 'halanganTanggal'])->get() as $d) {
             $rutinMap = [];
             foreach ($d->halanganRutin as $hr) {
-                $sesiId = $hr->sesi_ujian_id ?? 'ALL';
-                $rutinMap[$hr->hari][$sesiId] = true;
+                
+                $sesiId = $hr->sesi_ujian_id;
 
-                if (!empty($hr->ruangan_id)) {
-                    $this->dataRuanganRutin[$hr->ruangan_id][$hr->hari][$sesiId] = true;
+                if ($sesiId) {
+                    $rutinMap[$hr->hari][$sesiId] = true;
+
+                    if (!empty($hr->ruangan_id)) {
+                        $this->dataRuanganRutin[$hr->ruangan_id][$hr->hari][$sesiId] = true;
+                    }
                 }
             }
 
             $tanggalMap = [];
             foreach ($d->halanganTanggal as $ht) {
-                $sesiId = $ht->sesi_ujian_id ?? 'ALL';
-                $tanggalMap[$ht->tanggal][$sesiId] = true;
+
+                $sesiId = $ht->sesi_ujian_id;
+
+                if ($sesiId) {
+                    $tanggalMap[$ht->tanggal][$sesiId] = true;
+                }
             }
             $this->dataDosen[$d->id] = ['nama' => $d->name, 'rutin' => $rutinMap, 'tanggal' => $tanggalMap];
         }
 
         $modelClass = ($this->modelType == 'sidang') ? Sidang::class : JadwalSeminar::class;
-        $fixed = $modelClass::whereIn('status', ['sudah_terjadwal', 'draft','bentrok', 'telah_seminar', 'sudah_sidang'])->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
+        $fixed = $modelClass::whereIn('status', ['sudah_terjadwal', 'draft', 'bentrok', 'telah_seminar', 'sudah_sidang'])->whereBetween('tanggal', [$start, $endC->format('Y-m-d')])->get();
 
         foreach ($fixed as $fix) {
             $this->lockedSlots['room']["{$fix->tanggal}_{$fix->sesi_ujian_id}_{$fix->ruangan_id}"] = true;
@@ -212,12 +220,14 @@ class ScheduleService
             $geneConflicts = [];
             $isHardConflict = false;
 
+            // 1. Constraint: Waktu Ibadah (Jumat Sesi 5)
             if ($dayName == 'Jumat' && $sesiOrder == 5) {
                 $totalPenalty += $this->penaltyHard;
                 $geneConflicts[] = "Warning: Jumat Sesi 5";
                 $isHardConflict = true;
             }
 
+            // 2. Constraint: Ruangan Bentrok (Ganda)
             $keyRoom = "{$date}_{$sesiId}_{$ruangId}";
             if (isset($this->lockedSlots['room'][$keyRoom]) || isset($localRoom[$keyRoom])) {
                 $totalPenalty += $this->penaltyHard;
@@ -227,13 +237,15 @@ class ScheduleService
                 $localRoom[$keyRoom] = true;
             }
 
-            if (isset($this->dataRuanganRutin[$ruangId][$dayName][$sesiId]) || isset($this->dataRuanganRutin[$ruangId][$dayName]['ALL'])) {
+            // 3. Constraint: Ruangan Dipakai Kuliah Reguler
+            if (isset($this->dataRuanganRutin[$ruangId][$dayName][$sesiId])) {
                 $totalPenalty += $this->penaltyHard;
                 $geneConflicts[] = "Ruangan Dipakai Kuliah Reguler";
                 $isHardConflict = true;
             }
 
             foreach ($gene['dosen_ids'] as $dId) {
+                // 4. Constraint: Dosen Jadwal Ganda
                 $keyDosen = "{$date}_{$sesiId}_{$dId}";
                 if (isset($this->lockedSlots['dosen'][$keyDosen]) || isset($localDosen[$keyDosen])) {
                     $totalPenalty += $this->penaltyHard;
@@ -243,11 +255,10 @@ class ScheduleService
                     $localDosen[$keyDosen] = true;
                 }
 
+                // 5. Constraint: Dosen Berhalangan
                 if (
                     isset($this->dataDosen[$dId]['rutin'][$dayName][$sesiId]) ||
-                    isset($this->dataDosen[$dId]['rutin'][$dayName]['ALL']) ||
-                    isset($this->dataDosen[$dId]['tanggal'][$date][$sesiId]) ||
-                    isset($this->dataDosen[$dId]['tanggal'][$date]['ALL'])
+                    isset($this->dataDosen[$dId]['tanggal'][$date][$sesiId])
                 ) {
                     $totalPenalty += $this->penaltyHard;
                     $geneConflicts[] = "Dosen berhalangan";
@@ -331,7 +342,6 @@ class ScheduleService
 
     protected function mutasi(&$genes)
     {
-
         if (rand(0, 100) / 100 > $this->mutationRate) return;
 
         // Pilih satu jadwal mahasiswa secara acak untuk dimutasi
@@ -344,8 +354,6 @@ class ScheduleService
         $genes[$idx]['id_sesi']    = $sesiIds[array_rand($sesiIds)];
         $genes[$idx]['id_ruangan'] = $ruangIds[array_rand($ruangIds)];
     }
-
-
 
     // Fungsi Tabu Search
     protected function optimasiTabuSearch($individu)
