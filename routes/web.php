@@ -357,6 +357,6 @@ Route::prefix('apps')->middleware('auth')->group(function () {
         return view('errors.coming-soon');
     })->name('apps.coming-soon');
     Route::get('/cek-url', function () {
-    return route('login');
-});
+        return route('login');
+    });
 });
