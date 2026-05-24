@@ -14,7 +14,7 @@
                 </ul>
                 <i class="bi bi-list mobile-nav-toggle d-none"></i>
             </nav>
-            <a class="btn-getstarted scrollto" href="/login">Login</a>
+            <a class="btn-getstarted scrollto" href="{{ route('login')}}">Login</a>
         </div>
     </header>
 
