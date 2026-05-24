@@ -14,10 +14,10 @@
                 </ul>
                 <i class="bi bi-list mobile-nav-toggle d-none"></i>
             </nav>
-            <a class="btn-getstarted scrollto" href="{{ route('login')}}">Login</a>
+            <a class="btn-getstarted scrollto" href="/login">Login</a>
         </div>
     </header>
-    
+
     <main id="main">
         @yield('content')
     </main>
@@ -34,7 +34,7 @@
                 <img src="{{ asset('storage/images/settings/' . getSetting('app_logo'))}}" alt="" style="max-width: 100%; max-height: 100%; width: auto; height: auto;">
               </div>
               <p>
-                {{ getSetting('app_address')}} 
+                {{ getSetting('app_address')}}
                 <br><br>
                 <strong>Telp:</strong> {{ getSetting('app_phone') }}<br>
                 <strong>Email:</strong> {{ getSetting('app_email') }}<br>
@@ -73,5 +73,5 @@
     </div>
   </footer>
   <a href="#" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-    
+
 @endsection
