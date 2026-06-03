@@ -224,10 +224,20 @@ class ScheduleService
             $isHardConflict = false;
 
             // Constraint: Waktu Ibadah (Jumat Sesi 5)
-            if ($dayName == 'Jumat' && $sesiOrder == 5) {
-                $totalPenalty += $this->penaltyHard;
-                $geneConflicts[] = "Warning: Jumat Sesi 5";
-                $isHardConflict = true;
+            $batasMulaiJumatan = '11:00:00';
+            $batasSelesaiJumatan = '12:30:00';
+
+            if ($dayName == 'Jumat') {
+                // Ambil jam asli dari laci dataSesi berdasarkan ID Sesi yang sedang dievaluasi
+                $jamMulai = $this->dataSesi[$sesiId]['jam_mulai'];
+                $jamSelesai = $this->dataSesi[$sesiId]['jam_selesai'];
+
+                // Cek apakah jam sesi ini bertabrakan dengan rentang waktu Sholat Jumat
+                if ($jamMulai < $batasSelesaiJumatan && $jamSelesai > $batasMulaiJumatan) {
+                    $totalPenalty += $this->penaltyHard;
+                    $geneConflicts[] = "Bertabrakan dengan waktu ibadah ({$jamMulai} - {$jamSelesai})";
+                    $isHardConflict = true;
+                }
             }
 
             // Constraint: Ruangan Bentrok (Ganda)
@@ -284,8 +294,7 @@ class ScheduleService
                 ksort($sessions);
                 $sessionOrders = array_keys($sessions);
 
-                $consecutiveCount = 1; // Counter untuk soft constraint
-
+                $consecutiveCount = 1; 
                 for ($i = 0; $i < count($sessionOrders) - 1; $i++) {
                     $currOrder = $sessionOrders[$i];
                     $nextOrder = $sessionOrders[$i + 1];
